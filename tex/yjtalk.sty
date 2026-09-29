@@ -92,6 +92,11 @@
 \mode<article>{\renewcommand{\yjsource}[1]{\par{\footnotesize\color{yjSecondary}#1\par}}}
 \AtBeginEnvironment{frame}{\gdef\yj@source{}}
 
+% \narration{text}: what a voice-over says over this frame. Invisible in every
+% PDF; scripts/to_manim.py turns it into the video script (one scene per
+% frame, one caption per sentence). Presenter cues stay in \note.
+\newcommand{\narration}[1]{}
+
 % \yjkey{text}: the one thing to remember from a slide, in the accent colour.
 \newcommand{\yjkey}[1]{{\color{yjAccentText}\ifmmode\boldsymbol{#1}\else\bfseries #1\fi}}
 

@@ -201,6 +201,18 @@ def build(talk):
   \note[item]{Transition: which content belongs in which output?}
 \end{frame}
 
+\begin{frame}{\texttt{\textbackslash narration} scripts the video}
+  \begin{itemize}
+    \item \texttt{\textbackslash narration\{...\}} is invisible in every PDF.
+    \item<2-> \texttt{scripts/to\_manim.py} speaks it, one caption per sentence.
+    \item<3-> Each overlay step lands on the next sentence.
+  \end{itemize}
+  \narration{This sentence is the voice-over for this slide. The second
+    sentence reveals the second bullet. The third sentence reveals the last.}
+  \note{Narration is for the audience; notes are for you. The web deck shows
+    narration as its transcript (press C); notes stay in the presenter window.}
+\end{frame}
+
 \begin{frame}{Some content belongs in one output only}
   \begin{itemize}
     \item<handout:0> This line is on the slides but not in the handout.

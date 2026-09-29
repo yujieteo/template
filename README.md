@@ -71,7 +71,8 @@ Start from `make new`, or copy a frame from the examples:
 Rules the build enforces (`scripts/build.py` lints before compiling):
 
 - `\documentclass[...]{beamerswitch}` then `\usepackage{yjtalk}`.
-- Every frame has a `\note{...}` (or `% no-note` inside it).
+- Every frame has a `\note{...}` (or `% no-note` inside it). Add
+  `\narration{...}` too if the talk will become a video.
 - `\date{...}` is written by hand; `\today` is rejected.
 - No shell escape and no beamerswitch `also=` option; the build runs the variants.
 - No overfull boxes over 1 pt, undefined references, or missing glyphs in any variant.
@@ -87,6 +88,46 @@ Conventions the build cannot check:
   only to readers.
 - `\yjsource{...}` puts a chart's source line in the footline.
 - `\yjkey{...}` marks the one thing to remember, in the accent colour.
+
+## Web deck and video
+
+The same talk also becomes an interactive web page and a narrated video. Both
+start from the built PDFs, so any frame the slides can show, they show.
+
+```sh
+make web TALK=my-talk            # talks/my-talk/build/web/
+python3 -m http.server -d talks/my-talk/build/web
+make video TALK=my-talk Q=m      # talks/my-talk/build/video/my-talk.mp4
+```
+
+**Web deck** (`scripts/to_web.py`, runtime in `web/shell.html`): every slide
+page as SVG in light and dark, no external dependencies. Arrow keys and swipe
+step through overlays; `O` overview, `/` search (titles, slide text,
+transcript), `T` light or dark, `C` transcript, `D` the talk's CSV data with
+download, `P` presenter window (notes, next slide, clock, kept in sync), `F`
+fullscreen, `#n` deep links. Read-only WebMCP tools (`get_metadata`,
+`get_slide`, `search_slides`, `get_data`) never expose notes. Speaker notes go
+to `notes.md` in presentation-coach's format and load only over HTTP; publish
+the folder without it to keep them private. Same PDFs, same bytes.
+
+**Video** (`scripts/to_manim.py`, runtime in `manim/talkscene.py`): one scene
+per frame, spoken from `\narration{...}` (invisible in every PDF; section
+dividers say "Part N. Title."). Each frame fades in and each overlay step lands
+on the next sentence; captions are burned in below the slide. It writes
+generate-explainer-video's `script.json`, so real narration is one step:
+
+```sh
+python <skills>/generate-explainer-video/scripts/synthesize.py \
+  talks/my-talk/build/video/script.json --target-seconds <estimate> --tolerance 30
+make video TALK=my-talk Q=m      # now muxes narration.wav
+```
+
+Without that step the timeline is estimated at 130 words a minute and the
+video is silent, which is enough to check pacing. `talks/<slug>/manim/<label>.py`
+replaces one frame with a native Manim animation: the Breeden–Litzenberger talk
+draws its density curve and second differences from `data/curves.csv`
+(`manim/density.py`). Rendering needs `pip install -r manim/requirements.txt`,
+ffmpeg, Cairo, Pango and `fonts-urw-base35`; 480p takes about a minute.
 
 ## Data from visuals
 
@@ -125,6 +166,11 @@ theme-tokens.json        light and dark palettes
 scripts/build.py         lint, compile, verify
 scripts/new_talk.py      scaffold a talk
 scripts/sync_tokens.py   theme-tokens.json -> tex/yjtokens.tex
+scripts/talk_manifest.py talk.tex + beamer .nav -> frames, pages, notes, narration
+scripts/to_web.py        interactive web deck
+scripts/to_manim.py      narrated Manim video
+web/shell.html           web deck runtime
+manim/talkscene.py       video runtime (timing API of generate-explainer-video)
 .agents/skills/          playbooks for agents working in this repo
 ```
 

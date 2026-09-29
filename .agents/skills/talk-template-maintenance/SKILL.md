@@ -61,3 +61,13 @@ handout, script and trans (`<handout:0|trans:0>`) so page counts still agree.
    `python3 scripts/new_talk.py zz-smoke && python3 scripts/build.py --check zz-smoke && rm -r talks/zz-smoke`.
 4. Negative test for any new check: break a copy of a talk the way the check
    targets and confirm the build fails with the intended message.
+
+## Shared runtimes
+
+`web/shell.html` (web deck) and `manim/talkscene.py` (video) serve every talk.
+After changing either, rebuild both examples with `to_web.py` and
+`to_manim.py`, drive the web deck in a browser (see talk-web-and-video), and
+look at the video's review frames. `talkscene.py` keeps
+generate-explainer-video's timing API (`begin`, `at`, `finish`, `hold_until`,
+`budget`) and its `timings.json` format; do not diverge from them.
+

@@ -9,7 +9,8 @@ and dark, notes, script, handout, trans, article) reproducibly. Layout and comma
 - One talk, one `talk.tex`. Never split a talk into per-output files; use modes
   (`<handout:0>`, `\only<article>`, `\mode<article>{}`) instead.
 - Never hand-edit generated files: `tex/yjtokens.tex`, `talks/*/data/*.csv`,
-  `talks/*/data/numbers.tex`. Change the input, then regenerate.
+  `talks/*/data/numbers.tex`, anything in `talks/*/build/` (web deck, video
+  script, `notes.md`). Change the input, then regenerate.
 - Never type a number that a derive script can produce.
 - `talks/*/build/` is output; do not commit it.
 - Finish every change with `make check` (or `make check TALK=<slug>`) passing.
@@ -22,6 +23,7 @@ and dark, notes, script, handout, trans, article) reproducibly. Layout and comma
 | Start a talk, write or restructure frames, write presenter notes | `.agents/skills/talk-new-talk/SKILL.md` |
 | Build, verify, fix a failing check or CI, prove reproducibility | `.agents/skills/talk-build-verify/SKILL.md` |
 | Chart data or numbers from the visuals repo, refresh a snapshot | `.agents/skills/talk-data-from-visuals/SKILL.md` |
+| Build the web deck or the narrated video, write `\narration`, add a native Manim frame | `.agents/skills/talk-web-and-video/SKILL.md` |
 | Change the theme or colours, `yjtalk.sty`, the starter, or add an output variant | `.agents/skills/talk-template-maintenance/SKILL.md` |
 
 Quick check for any change: `python3 scripts/build.py --check`

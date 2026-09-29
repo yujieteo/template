@@ -25,6 +25,9 @@
 
 \begin{frame}[plain]
   \titlepage
+  \narration{Can a list of option prices tell you what the market expects a
+    stock to be worth in a year? It can, with two derivatives. Then we will
+    see where that neat answer breaks.}
   \note{Open with the question, not the formula: can a list of option prices
     tell you what the market thinks the stock will be worth in a year? You
     will answer yes, show why in two derivatives, then show where it breaks.
@@ -58,8 +61,11 @@ precise and shows the one place the precise version fails in practice.
         \end{axis}
       \end{tikzpicture}
   \end{columns}
+  \narration{A call option pays the part of the stock price above the strike,
+    and nothing below it. Its price today is the discounted expected payoff.
+    Quote one price per strike, and you get a whole curve.}
   \note{Stress the kink: the payoff is flat, then rises with slope one. Every
-    result in the talk comes from that corner. Point at the red dot.
+    result in the talk comes from that corner. Point at the highlighted dot.
     Transition: if the payoff has a corner at $K$, what does the price do as
     you slide $K$?}
 \end{frame}
@@ -80,9 +86,13 @@ picks the density out of the integral.
   \end{align*}
   \uncover<4->{\centering\yjkey{$p(K) = e^{rT}\,C''(K)$}: the density is the
     curvature of the call-price curve.\par}
+  \narration{Write the price as an integral over the density of the stock
+    price. Differentiate once in the strike and the kink becomes a step.
+    Differentiate again and the step becomes a spike at the strike. So the
+    density is the curvature of the call price curve, times e to the r T.}
   \note{Reveal one line per click. On line two, say it in words: raising the
     strike by a dollar costs you a dollar in every state where the option pays.
-    On line three, the step becomes a spike at $K$. Pause on the red line; it is
+    On line three, the step becomes a spike at $K$. Pause on the highlighted line; it is
     the whole talk. Transition: does real curvature look like a density?}
 \end{frame}
 
@@ -100,13 +110,16 @@ picks the density out of the integral.
   \end{tikzpicture}
   \yjsource{Synthetic Black--Scholes prices, $S_0=\blSzero$, $r=\blRate$,
     $\sigma=\blSigma$, $T=\blT$; \blStrikes\ strikes. Not market data.}
+  \narration{Here is that curve for synthetic Black Scholes prices. At a strike
+    of \blKzero, the call costs \blCzero. The curve bends most near today's
+    price, where the stock is most likely to end.}
   \note{Point at the region around $K=\blKzero$: the curve is most convex near
     today's price. Far out, it is nearly straight. Say plainly that these are
     model prices, not quotes; that matters on slide 7. Transition: turn
     curvature into a number.}
 \end{frame}
 
-\begin{frame}{Its second difference lands on the density at every strike}
+\begin{frame}[label=density]{Its second difference lands on the density at every strike}
   \centering
   \begin{tikzpicture}
     \begin{axis}[yj, width=12cm, height=4.9cm, xmin=60, xmax=160,
@@ -119,6 +132,8 @@ picks the density out of the integral.
     \end{axis}
   \end{tikzpicture}
   \yjsource{Second difference with $h=0.5$ on the same synthetic prices.}
+  \narration{Take second differences of those prices, and they land exactly on
+    the density at every strike. At \blKzero, the density is \blPzero.}
   \note{The wide band is the lognormal density; the thin navy line is
     computed only from call prices. They coincide. At $K=\blKzero$ the density
     is \blPzero. Likely question: why lognormal? Answer: the prices are
@@ -152,6 +167,9 @@ probability of landing near $K$.
         \end{axis}
       \end{tikzpicture}
   \end{columns}
+  \narration{You can even trade a second difference. Buy one call on each side
+    of the strike and sell two at it. The payoff is a tent of area delta
+    squared, so its price estimates the density.}
   \note{Draw the tent in the air with your hand. The point: nothing here needs
     a model; it is three quotes and arithmetic. Transition: shrink $\Delta$ and
     watch the estimate converge.}
@@ -172,6 +190,8 @@ probability of landing near $K$.
   Closed form: $p(\blKzero) = \yjkey{\blPzero}$. At $\Delta=\blDeltaMin$ the
   butterfly gives \blEstMin.
   \yjsource{Same synthetic prices; $K=\blKzero$.}
+  \narration{Shrink the tent and the estimate converges. At a half width of
+    \blDeltaMin, the butterfly gives \blEstMin, matching the closed form.}
   \note{Read one row, not all four: at half-width \blDeltaMin\ the estimate
     matches to the sixth decimal. The error column shrinks roughly with
     $\Delta^2$. Transition: so just use the narrowest butterfly? That is the
@@ -200,6 +220,9 @@ amplifies it. Bias falls as $\Delta$ shrinks; noise grows.
   \blNoiseRatio\ times the density itself}.
   \yjsource{Bias from the synthetic prices; noise bound $e^{rT}\,4\varepsilon/\Delta^2$
     with an assumed quote error $\varepsilon=\blEps$.}
+  \narration{Real quotes carry errors of about a cent. Dividing by delta squared
+    amplifies them, so shrinking the tent trades bias for noise. At the
+    narrowest width, the noise is about \blNoiseRatio\ times the density itself.}
   \note{This is the turn. Everything so far was exact because the prices were
     exact. With one-cent quote errors, the narrowest butterfly is useless.
     Say that $\varepsilon$ is an assumption for illustration, not measured.
@@ -220,6 +243,9 @@ amplifies it. Bias falls as $\Delta$ shrinks; noise grows.
     Breeden \& Litzenberger (1978), \emph{Prices of state-contingent claims
     implicit in option prices}, J.\ Business 51(4).\quad
     Martin (2018), \emph{Options and the gamma knife}, JPM.\par}
+  \narration{Remember three things. The density is the curvature of call
+    prices. A butterfly spread is that curvature as a trade. And noisy prices
+    must be smoothed before you differentiate them.}
   \note{Say the three lines slowly, one per click, then stop talking. Closing
     line: ``Option prices already contain a probability distribution; the
     hard part is not the calculus, it is the noise.'' Take questions.}

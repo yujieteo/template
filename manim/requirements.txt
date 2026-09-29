@@ -1,0 +1,4 @@
+# For scripts/to_manim.py rendering. System packages: ffmpeg (with libass for
+# burned-in captions), libcairo2-dev, libpango1.0-dev, pkg-config, and
+# fonts-urw-base35 (P052, the Palatino the slides use).
+manim>=0.19
