@@ -114,7 +114,9 @@ the folder without it to keep them private. Same PDFs, same bytes.
 per frame, spoken from `\narration{...}` (invisible in every PDF; section
 dividers say "Part N. Title."). Each frame fades in and each overlay step lands
 on the next sentence; captions are burned in below the slide. It writes
-generate-explainer-video's `script.json`, so real narration is one step:
+generate-explainer-video's `script.json` with a British English Kokoro voice
+(`bf_emma`; `--voice bm_george` for a male voice, `af_heart` for American), so
+real narration is one step:
 
 ```sh
 python <skills>/generate-explainer-video/scripts/synthesize.py \

@@ -45,11 +45,15 @@ frame: slide readable, caption below the slide not over it, the frame's last
 step shown by its last sentence.
 
 - Silent draft: with no `narration.wav`, timings are estimated.
+- Voice: British English `bf_emma` by default (`--voice bm_george`, or
+  `af_heart` for American). Kokoro reads the language from the id's first
+  letter, so write British spelling in `\narration` for a `b` voice.
 - Narrated: run generate-explainer-video's `synthesize.py` on
   `build/video/script.json` (its `--out` defaults to that folder; pass
   `--target-seconds` near the estimate and a wide `--tolerance`), then rerun
-  `to_manim.py`. It keeps Kokoro's timings only while they match the script;
-  edit narration, and it falls back to the estimate until you resynthesize.
+  `to_manim.py`. It keeps Kokoro's timings only while they match the script
+  and its voice; change either, and it falls back to the estimate until you
+  resynthesize.
 - Install: `pip install -r manim/requirements.txt` in a venv, ffmpeg with
   libass, Cairo, Pango, `fonts-urw-base35`. Pass `--python <venv>/bin/python`
   or set `MANIM_PYTHON`.
