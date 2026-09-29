@@ -14,11 +14,11 @@ from one source file. Chart data can come from the
 
 ## Look
 
-A warm editorial theme: ivory paper, ink text and a single clay accent, with
+An editorial theme: ivory paper, ink text and a single navy accent, with
 Palatino for both text and maths. Frame titles are large roman type under a
 small-caps section kicker; sections open with a numbered divider slide; lists
-use clay markers; blocks sit on a soft surface tint. The dark variant swaps
-the palette for charcoal paper and warm light text; every named colour follows
+use navy markers; blocks sit on a soft blue-grey tint. The dark variant swaps
+the palette for navy paper with light text and a lighter blue accent; every named colour follows
 it, so charts need no changes. Colours live in `theme-tokens.json` (both
 palettes, same keys) and are checked for contrast; handouts always print in
 the light palette.
@@ -103,7 +103,7 @@ outputs are stale. Talks build without a visuals checkout.
 
 Colours: edit `theme-tokens.json` (keep `light` and `dark` in step), then
 `make tokens` regenerates `tex/yjtokens.tex`; the build fails if it is stale.
-In charts use the working names `yjForeground`, `yjAccent`, `yjBlue`,
+In charts use the working names `yjForeground`, `yjAccent`, `yjWarm`,
 `yjGreen`, `yjSecondary`, `yjBorder`, never hex values.
 
 ## Reproducibility

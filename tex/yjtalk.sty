@@ -11,7 +11,7 @@
 %   talk-trans    one page per frame, no overlays             (beamerswitch)
 %   talk-article  the talk as a written article              (beamerswitch)
 %
-% Look: warm editorial. Ivory paper, ink text, one clay accent, Palatino
+% Look: editorial. Ivory paper, ink text, one navy accent, Palatino
 % for text and maths. Colours come from yjtokens.tex (theme-tokens.json).
 % It also makes pdfLaTeX output byte-reproducible.
 \NeedsTeXFormat{LaTeX2e}
@@ -61,7 +61,7 @@
 \ifyj@dark\yjusepalette{D}\else\yjusepalette{L}\fi
 
 % Shared chart style: hairline axes, direct labels, series in a fixed order
-% (ink, clay, blue, green) so a colour means the same thing on every slide.
+% (ink, navy, warm clay, green) so a colour means the same thing on every slide.
 \pgfplotsset{
   yj/.style={
     axis lines=left,
@@ -70,7 +70,7 @@
     tick label style={font=\footnotesize, text=yjSecondary},
     label style={font=\footnotesize, text=yjSecondary},
     every axis plot/.append style={line width=1.3pt},
-    cycle list={{yjForeground},{yjAccent},{yjBlue},{yjGreen}},
+    cycle list={{yjForeground},{yjAccent},{yjWarm},{yjGreen}},
     grid=none,
     clip=false,
     scaled ticks=false,
@@ -116,7 +116,7 @@
   \setbeamercolor{subtitle}{fg=yjSecondary}
   \setbeamercolor{block title}{fg=yjAccentText,bg=yjSurface}
   \setbeamercolor{block body}{fg=yjForeground,bg=yjSurface}
-  \setbeamercolor{block title example}{fg=yjBlue,bg=yjSurface}
+  \setbeamercolor{block title example}{fg=yjWarm,bg=yjSurface}
   \setbeamercolor{block body example}{fg=yjForeground,bg=yjSurface}
   \setbeamercolor{block title alerted}{fg=yjAccentText,bg=yjSurface}
   \setbeamercolor{block body alerted}{fg=yjForeground,bg=yjSurface}
@@ -132,7 +132,7 @@
   \setbeamerfont{block title}{series=\bfseries,size=\normalsize}
   \setbeamerfont{footline}{size=\scriptsize}
 
-  % Lists: a small clay disc, then a muted dash for the second level.
+  % Lists: a small navy disc, then a muted dash for the second level.
   \setbeamertemplate{itemize item}{\raisebox{0.28ex}{\tikz\fill[yjAccent] (0,0) circle (1.5pt);}}
   \setbeamertemplate{itemize subitem}{\color{yjMuted}--}
   \setbeamertemplate{enumerate item}{\color{yjAccentText}\insertenumlabel.}
@@ -172,7 +172,7 @@
       \hskip12mm}%
     \vskip5mm}
 
-  % Title page: kicker, large roman title, italic subtitle, clay rule, byline.
+  % Title page: kicker, large roman title, italic subtitle, navy rule, byline.
   \setbeamertemplate{title page}{%
     \vskip0pt plus 1fill
     {\usebeamerfont{footline}\color{yjAccentText}\scshape\insertinstitute\par}
@@ -189,7 +189,7 @@
     {\small\color{yjSecondary}\insertdate\par}
     \vskip0pt plus 1.4fill}
 
-  % Section divider: big clay numeral and the section name, not numbered.
+  % Section divider: big navy numeral and the section name, not numbered.
   % Live slides only: it would waste a slot in the handout and the script.
   \AtBeginSection[]{%
     \ifyjsectionpages
@@ -327,7 +327,7 @@
   \setlength{\parindent}{0pt}
   \hypersetup{colorlinks=true,linkcolor=yjAccentText,urlcolor=yjAccentText,citecolor=yjAccentText}
 
-  % Sections: clay roman numeral, then the heading in large roman.
+  % Sections: navy two-digit number, then the heading in large roman.
   \titleformat{\section}{\LARGE\mdseries}
     {\color{yjAccent}\yj@twodigits{\value{section}}}{0.8em}{}
   \titlespacing*{\section}{0pt}{4ex plus 1ex}{1.5ex}
@@ -348,7 +348,7 @@
   \fancyhead[R]{\footnotesize\color{yjSecondary}\@author}
   \fancyfoot[R]{\footnotesize\color{yjSecondary}\thepage}
 
-  % Title block: kicker, large title, italic subtitle, clay rule, byline.
+  % Title block: kicker, large title, italic subtitle, navy rule, byline.
   \renewcommand{\maketitle}{%
     \thispagestyle{empty}%
     {\footnotesize\color{yjAccentText}\scshape\yj@institute\par}
@@ -362,7 +362,7 @@
     \vskip5ex}
 
   % Frames in the article: the frame title as an italic run-in heading with
-  % a clay dash, so slides read as figures within the prose.
+  % a navy dash, so slides read as figures within the prose.
   \setbeamertemplate{frametitle}{%
     \par\vskip2ex\noindent{\color{yjAccent}\rule[0.6ex]{1.4em}{0.8pt}}\enspace
     {\large\itshape\insertframetitle}\par\vskip0.8ex}

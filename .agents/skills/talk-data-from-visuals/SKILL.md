@@ -38,7 +38,7 @@ frame and note that says it; the macro updates the number, not the claim.
 
 ## Colours in charts
 
-Use the theme's names, never hex values: `yjForeground`, `yjAccent` (clay,
-the one thing to look at), `yjBlue`, `yjGreen`, `yjSecondary` for labels,
+Use the theme's names, never hex values: `yjForeground`, `yjAccent` (navy,
+the one thing to look at), `yjWarm`, `yjGreen`, `yjSecondary` for labels,
 `yjBorder` for reference bands. The `yj` pgfplots style cycles series in that
 order. Named colours switch automatically in the dark variant.

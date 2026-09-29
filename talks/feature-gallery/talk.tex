@@ -21,7 +21,7 @@
 
 \lstset{
   basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\color{yjBlue}\bfseries,
+  keywordstyle=\color{yjWarm}\bfseries,
   commentstyle=\color{yjSecondary}\itshape,
   stringstyle=\color{yjAccent},
   columns=fullflexible,
@@ -96,7 +96,7 @@ state, so nothing is hidden on paper.
       arr/.style={-Stealth, yjSecondary, thick}]
     \node[box] (src) {talk.tex};
     \node[box, right=1.4cm of src, visible on=<2->] (tex) {pdflatex $\times 7$};
-    \node[box, right=1.4cm of tex, visible on=<3->, draw=yjBlue] (pdf) {seven PDFs};
+    \node[box, right=1.4cm of tex, visible on=<3->, draw=yjAccent] (pdf) {seven PDFs};
     \draw[arr, visible on=<2->] (src) -- (tex);
     \draw[arr, visible on=<3->] (tex) -- (pdf);
     \node[below=0.4cm of tex, font=\footnotesize, text=yjSecondary, visible on=<2->]
@@ -114,8 +114,8 @@ state, so nothing is hidden on paper.
       \addplot[yjForeground, domain=0:4, samples=40] {x^2};
       \node[anchor=south east, font=\footnotesize] at (axis cs:3.3,10.9) {$x^2$};
       \only<2->{
-        \addplot[yjBlue, domain=0:4, samples=40] {2^x};
-        \node[anchor=north west, font=\footnotesize, text=yjBlue] at (axis cs:3.4,9.6) {$2^x$};
+        \addplot[yjWarm, domain=0:4, samples=40] {2^x};
+        \node[anchor=north west, font=\footnotesize, text=yjWarm] at (axis cs:3.4,9.6) {$2^x$};
       }
       \only<3->{
         \fill[yjAccent] (axis cs:2,4) circle[radius=2.5pt];

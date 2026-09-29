@@ -119,7 +119,7 @@ picks the density out of the integral.
     \end{axis}
   \end{tikzpicture}
   \yjsource{Second difference with $h=0.5$ on the same synthetic prices.}
-  \note{The wide band is the lognormal density; the thin clay line is
+  \note{The wide band is the lognormal density; the thin navy line is
     computed only from call prices. They coincide. At $K=\blKzero$ the density
     is \blPzero. Likely question: why lognormal? Answer: the prices are
     Black--Scholes, so the implied density must be lognormal; this is a check,
@@ -147,8 +147,8 @@ probability of landing near $K$.
         \begin{axis}[yj, width=6.3cm, height=4.1cm, xmin=85, xmax=115, ymin=0, ymax=7,
             xtick={95,100,105}, xticklabels={$K{-}\Delta$,$K$,$K{+}\Delta$}, ytick=\empty,
             xlabel={$S_T$}, ylabel={payoff}]
-          \addplot[yjBlue, fill=yjBlue, fill opacity=0.15] coordinates {(85,0) (95,0) (100,5) (105,0) (115,0)};
-          \node[font=\footnotesize, text=yjBlue] at (axis cs:100,6) {height $\Delta$};
+          \addplot[yjWarm, fill=yjWarm, fill opacity=0.15] coordinates {(85,0) (95,0) (100,5) (105,0) (115,0)};
+          \node[font=\footnotesize, text=yjWarm] at (axis cs:100,6) {height $\Delta$};
         \end{axis}
       \end{tikzpicture}
   \end{columns}

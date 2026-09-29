@@ -1,27 +1,27 @@
 {
-  "_comment": "Colours for talks. Warm editorial palette: ivory paper, ink text, clay accent. Each mode lists the same keys; scripts/sync_tokens.py turns this into tex/yjtokens.tex.",
+  "_comment": "Colours for talks. Ivory paper, ink text, navy accent; dark mode is navy paper with light text. Each mode lists the same keys; scripts/sync_tokens.py turns this into tex/yjtokens.tex.",
   "light": {
     "background": "#FAF9F5",
-    "surface": "#F0EEE6",
+    "surface": "#EEF1F5",
     "foreground": "#141413",
-    "secondary": "#5E5D59",
-    "muted": "#9C9A92",
-    "border": "#E3E0D6",
-    "accent": "#D97757",
-    "accent_text": "#B8532F",
-    "blue": "#4F7FB0",
-    "green": "#667A4C"
+    "secondary": "#55585E",
+    "muted": "#9A9DA3",
+    "border": "#DCE1E8",
+    "accent": "#2D63A8",
+    "accent_text": "#1F4E8C",
+    "warm": "#C0653F",
+    "green": "#5F7A45"
   },
   "dark": {
-    "background": "#1F1E1D",
-    "surface": "#2A2926",
-    "foreground": "#F0EEE6",
-    "secondary": "#B8B5AC",
-    "muted": "#827F77",
-    "border": "#3B3A36",
-    "accent": "#D97757",
-    "accent_text": "#E8957A",
-    "blue": "#8AB4DE",
-    "green": "#9CB080"
+    "background": "#0F1C2E",
+    "surface": "#182A40",
+    "foreground": "#EEF1F5",
+    "secondary": "#AAB6C5",
+    "muted": "#6F7F94",
+    "border": "#26394F",
+    "accent": "#6E9BD1",
+    "accent_text": "#9CBEE8",
+    "warm": "#E39A76",
+    "green": "#9DB985"
   }
 }
