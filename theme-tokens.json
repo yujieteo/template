@@ -1,0 +1,27 @@
+{
+  "_comment": "Colours for talks. Warm editorial palette: ivory paper, ink text, clay accent. Each mode lists the same keys; scripts/sync_tokens.py turns this into tex/yjtokens.tex.",
+  "light": {
+    "background": "#FAF9F5",
+    "surface": "#F0EEE6",
+    "foreground": "#141413",
+    "secondary": "#5E5D59",
+    "muted": "#9C9A92",
+    "border": "#E3E0D6",
+    "accent": "#D97757",
+    "accent_text": "#B8532F",
+    "blue": "#4F7FB0",
+    "green": "#667A4C"
+  },
+  "dark": {
+    "background": "#1F1E1D",
+    "surface": "#2A2926",
+    "foreground": "#F0EEE6",
+    "secondary": "#B8B5AC",
+    "muted": "#827F77",
+    "border": "#3B3A36",
+    "accent": "#D97757",
+    "accent_text": "#E8957A",
+    "blue": "#8AB4DE",
+    "green": "#9CB080"
+  }
+}

@@ -1,8 +1,8 @@
 # SKILLS.md
 
 Router for agents working in this repo: one-source beamer talks built with
-beamerswitch. Each `talks/<slug>/talk.tex` builds six PDFs (slides, notes,
-script, handout, trans, article) reproducibly. Layout and commands: `README.md`.
+beamerswitch. Each `talks/<slug>/talk.tex` builds seven PDFs (slides light
+and dark, notes, script, handout, trans, article) reproducibly. Layout and commands: `README.md`.
 
 ## Always
 
@@ -21,7 +21,7 @@ script, handout, trans, article) reproducibly. Layout and commands: `README.md`.
 | --- | --- |
 | Start a talk, write or restructure frames, write presenter notes | `.agents/skills/talk-new-talk/SKILL.md` |
 | Build, verify, fix a failing check or CI, prove reproducibility | `.agents/skills/talk-build-verify/SKILL.md` |
-| Chart data or numbers from the visuals repo, refresh a snapshot or tokens | `.agents/skills/talk-data-from-visuals/SKILL.md` |
-| Change the theme, `yjtalk.sty`, the starter, or add an output variant | `.agents/skills/talk-template-maintenance/SKILL.md` |
+| Chart data or numbers from the visuals repo, refresh a snapshot | `.agents/skills/talk-data-from-visuals/SKILL.md` |
+| Change the theme or colours, `yjtalk.sty`, the starter, or add an output variant | `.agents/skills/talk-template-maintenance/SKILL.md` |
 
 Quick check for any change: `python3 scripts/build.py --check`

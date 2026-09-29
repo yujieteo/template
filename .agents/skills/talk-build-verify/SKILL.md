@@ -15,7 +15,7 @@ description: Build talks, run the verifier, and fix what it reports: lint errors
 | Live preview | `make watch TALK=<slug>` |
 
 The pipeline, in order: lint `talk.tex` -> `sync_tokens.py --verify` ->
-`derive.py --verify` (if the talk has one) -> compile six variants in parallel
+`derive.py --verify` (if the talk has one) -> compile seven variants in parallel
 with latexmk -> check logs -> check page counts -> with `--check`, rebuild in a
 temp dir and compare SHA-256.
 

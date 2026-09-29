@@ -49,12 +49,12 @@ precise and shows the one place the precise version fails in practice.
       \end{itemize}
     \column{0.45\textwidth}
       \begin{tikzpicture}
-        \begin{axis}[yj, width=6.5cm, height=4.6cm,
+        \begin{axis}[yj, width=6.3cm, height=4.1cm,
             xlabel={stock price at expiry $S_T$}, ylabel={payoff},
             xmin=60, xmax=140, ymin=0, ymax=42, xtick={100}, xticklabels={$K$}, ytick=\empty]
           \addplot[yjForeground, domain=60:140, samples=3] {max(x-100,0)};
-          \node[anchor=south east, font=\footnotesize, text=yjSelected] at (axis cs:100,1) {kink};
-          \fill[yjSelected] (axis cs:100,0) circle[radius=2pt];
+          \node[anchor=south east, font=\footnotesize, text=yjAccentText] at (axis cs:100,1) {kink};
+          \fill[yjAccent] (axis cs:100,0) circle[radius=2pt];
         \end{axis}
       \end{tikzpicture}
   \end{columns}
@@ -89,12 +89,12 @@ picks the density out of the integral.
 \begin{frame}{The call-price curve bends most where the stock is most likely to end}
   \centering
   \begin{tikzpicture}
-    \begin{axis}[yj, width=12cm, height=6cm, xmin=60, xmax=160,
+    \begin{axis}[yj, width=12cm, height=4.9cm, xmin=60, xmax=160,
         xlabel={strike $K$}, ylabel={call price $C(K)$}, ymin=0]
       \addplot[yjForeground] table[x=K, y=call] {\curves};
       \draw[yjSecondary, dashed] (axis cs:\blKzero,0) -- (axis cs:\blKzero,\blCzero);
-      \fill[yjSelected] (axis cs:\blKzero,\blCzero) circle[radius=2.5pt];
-      \node[anchor=south west, font=\footnotesize, text=yjSelected]
+      \fill[yjAccent] (axis cs:\blKzero,\blCzero) circle[radius=2.5pt];
+      \node[anchor=south west, font=\footnotesize, text=yjAccentText]
         at (axis cs:\blKzero,\blCzero) {$C(\blKzero) = \blCzero$};
     \end{axis}
   \end{tikzpicture}
@@ -109,17 +109,17 @@ picks the density out of the integral.
 \begin{frame}{Its second difference lands on the density at every strike}
   \centering
   \begin{tikzpicture}
-    \begin{axis}[yj, width=12cm, height=6cm, xmin=60, xmax=160,
+    \begin{axis}[yj, width=12cm, height=4.9cm, xmin=60, xmax=160,
         xlabel={strike $K$}, ylabel={density $p(K)$}, ymin=0,
         yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3}]
       \addplot[yjBorder, line width=5pt] table[x=K, y=density] {\curves};
-      \addplot[yjSelected, line width=1pt] table[x=K, y=fd] {\curves};
-      \node[anchor=west, font=\footnotesize, text=yjSecondary] at (axis cs:118,0.017) {closed form (grey)};
-      \node[anchor=west, font=\footnotesize, text=yjSelected] at (axis cs:118,0.0145) {$e^{rT}\,\Delta^2 C / h^2$ (red)};
+      \addplot[yjAccent, line width=1pt] table[x=K, y=fd] {\curves};
+      \node[anchor=west, font=\footnotesize, text=yjSecondary] at (axis cs:118,0.017) {closed form (wide band)};
+      \node[anchor=west, font=\footnotesize, text=yjAccentText] at (axis cs:118,0.0145) {$e^{rT}\,\Delta^2 C / h^2$ (thin line)};
     \end{axis}
   \end{tikzpicture}
   \yjsource{Second difference with $h=0.5$ on the same synthetic prices.}
-  \note{The thick grey band is the lognormal density; the thin red line is
+  \note{The wide band is the lognormal density; the thin clay line is
     computed only from call prices. They coincide. At $K=\blKzero$ the density
     is \blPzero. Likely question: why lognormal? Answer: the prices are
     Black--Scholes, so the implied density must be lognormal; this is a check,
@@ -144,11 +144,11 @@ probability of landing near $K$.
       \end{itemize}
     \column{0.48\textwidth}
       \begin{tikzpicture}
-        \begin{axis}[yj, width=6.5cm, height=4.6cm, xmin=85, xmax=115, ymin=0, ymax=7,
+        \begin{axis}[yj, width=6.3cm, height=4.1cm, xmin=85, xmax=115, ymin=0, ymax=7,
             xtick={95,100,105}, xticklabels={$K{-}\Delta$,$K$,$K{+}\Delta$}, ytick=\empty,
             xlabel={$S_T$}, ylabel={payoff}]
-          \addplot[yjMark, fill=yjMark, fill opacity=0.15] coordinates {(85,0) (95,0) (100,5) (105,0) (115,0)};
-          \node[font=\footnotesize, text=yjMark] at (axis cs:100,6) {height $\Delta$};
+          \addplot[yjBlue, fill=yjBlue, fill opacity=0.15] coordinates {(85,0) (95,0) (100,5) (105,0) (115,0)};
+          \node[font=\footnotesize, text=yjBlue] at (axis cs:100,6) {height $\Delta$};
         \end{axis}
       \end{tikzpicture}
   \end{columns}
@@ -187,13 +187,13 @@ amplifies it. Bias falls as $\Delta$ shrinks; noise grows.
 \begin{frame}{On real quotes, shrinking $\Delta$ trades bias for noise}
   \centering
   \begin{tikzpicture}
-    \begin{axis}[yj, width=9.5cm, height=5.4cm, xmode=log, ymode=log,
+    \begin{axis}[yj, width=9.5cm, height=4.4cm, xmode=log, ymode=log,
         xlabel={half-width $\Delta$}, ylabel={error in $p(K)$},
         xtick={0.5,1,2,5}, xticklabels={0.5,1,2,5}, x dir=reverse]
       \addplot[yjSecondary, mark=*] table[x=delta, y=bias] {\butterflies};
-      \addplot[yjSelected, mark=*] table[x=delta, y=noise] {\butterflies};
+      \addplot[yjAccent, mark=*] table[x=delta, y=noise] {\butterflies};
       \node[anchor=west, font=\footnotesize, text=yjSecondary] at (axis cs:0.5,0.000001) {bias};
-      \node[anchor=west, font=\footnotesize, text=yjSelected] at (axis cs:0.5,0.1682) {noise bound, $\varepsilon=\blEps$};
+      \node[anchor=west, font=\footnotesize, text=yjAccentText] at (axis cs:0.5,0.1682) {noise bound, $\varepsilon=\blEps$};
     \end{axis}
   \end{tikzpicture}
   \par At $\Delta=\blDeltaMin$ the noise bound is \blNoiseMin: \yjkey{about

@@ -36,7 +36,8 @@ TEX = ROOT / "tex"
 
 # Jobname suffix -> what it is. Order is the order of SHA256SUMS.
 VARIANTS = {
-    "slides": "projector slides with overlays",
+    "slides": "projector slides with overlays, light",
+    "dark": "projector slides with overlays, dark",
     "notes": "slides with notes on a second screen (pdfpc --notes=right)",
     "script": "one page of notes per frame, to print",
     "handout": "3 frames per A4 page for the audience",
@@ -145,6 +146,7 @@ def build_talk(talk_dir, variants, outdir, epoch):
     frames = pages.get("trans")
     expect = {
         "notes": pages.get("slides"),
+        "dark": pages.get("slides"),
         "script": frames,
         "handout": math.ceil(frames / HANDOUT_NUP) if frames else None,
     }

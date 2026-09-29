@@ -21,9 +21,9 @@
 
 \lstset{
   basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\color{yjMark}\bfseries,
+  keywordstyle=\color{yjBlue}\bfseries,
   commentstyle=\color{yjSecondary}\itshape,
-  stringstyle=\color{yjSelected},
+  stringstyle=\color{yjAccent},
   columns=fullflexible,
   keepspaces=true,
   showstringspaces=false,
@@ -95,8 +95,8 @@ state, so nothing is hidden on paper.
                   minimum height=1cm, font=\small},
       arr/.style={-Stealth, yjSecondary, thick}]
     \node[box] (src) {talk.tex};
-    \node[box, right=1.4cm of src, visible on=<2->] (tex) {pdflatex $\times 6$};
-    \node[box, right=1.4cm of tex, visible on=<3->, draw=yjMark] (pdf) {six PDFs};
+    \node[box, right=1.4cm of src, visible on=<2->] (tex) {pdflatex $\times 7$};
+    \node[box, right=1.4cm of tex, visible on=<3->, draw=yjBlue] (pdf) {seven PDFs};
     \draw[arr, visible on=<2->] (src) -- (tex);
     \draw[arr, visible on=<3->] (tex) -- (pdf);
     \node[below=0.4cm of tex, font=\footnotesize, text=yjSecondary, visible on=<2->]
@@ -112,14 +112,14 @@ state, so nothing is hidden on paper.
     \begin{axis}[yj, width=11cm, height=5.5cm, xmin=0, xmax=4, ymin=0, ymax=16,
         xlabel={$x$}, ylabel={$y$}]
       \addplot[yjForeground, domain=0:4, samples=40] {x^2};
-      \node[anchor=west, font=\footnotesize] at (axis cs:4,16) {$x^2$};
+      \node[anchor=south east, font=\footnotesize] at (axis cs:3.3,10.9) {$x^2$};
       \only<2->{
-        \addplot[yjMark, domain=0:4, samples=40] {2^x};
-        \node[anchor=west, font=\footnotesize, text=yjMark] at (axis cs:4,15) {$2^x$};
+        \addplot[yjBlue, domain=0:4, samples=40] {2^x};
+        \node[anchor=north west, font=\footnotesize, text=yjBlue] at (axis cs:3.4,9.6) {$2^x$};
       }
       \only<3->{
-        \fill[yjSelected] (axis cs:2,4) circle[radius=2.5pt];
-        \node[anchor=north west, font=\footnotesize, text=yjSelected] at (axis cs:2,4) {equal at $x=2$};
+        \fill[yjAccent] (axis cs:2,4) circle[radius=2.5pt];
+        \node[anchor=north west, font=\footnotesize, text=yjAccentText] at (axis cs:2,4) {equal at $x=2$};
       }
     \end{axis}
   \end{tikzpicture}
@@ -166,7 +166,7 @@ state, so nothing is hidden on paper.
     \toprule
     Output  & Pages here & Overlays \\
     \midrule
-    slides  & one per step  & kept \\ \pause
+    slides, dark & one per step  & kept \\ \pause
     notes   & one per step  & kept, notes on the right \\ \pause
     handout & 3 frames each & collapsed \\
     script  & one per frame & collapsed \\
@@ -180,8 +180,8 @@ state, so nothing is hidden on paper.
 \begin{frame}[fragile]{Code needs a fragile frame}
 \begin{lstlisting}[language=Python]
 def build(talk):
-    # one source, six outputs
-    for variant in ("slides", "notes", "script",
+    # one source, seven outputs
+    for variant in ("slides", "dark", "notes", "script",
                     "handout", "trans", "article"):
         compile(talk, jobname=f"talk-{variant}")
 \end{lstlisting}
@@ -208,7 +208,7 @@ def build(talk):
           \only<presentation>{\texttt{\textbackslash only<article>} text is hidden here.}
     \item Text between frames is article-only (\texttt{ignorenonframetext}).
   \end{itemize}
-  \note{Mode names: beamer (slides, notes), handout (handout, script), trans,
+  \note{Mode names: beamer (slides, dark, notes), handout (handout, script), trans,
     article; presentation means all but article. Put \texttt{<handout:0>} on
     anything you do not want printed.}
 \end{frame}

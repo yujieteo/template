@@ -1,14 +1,14 @@
 # Thin wrapper over scripts/build.py. TALK=<slug> limits to one talk.
-#   make                    all talks, all six variants
+#   make                    all talks, all seven variants
 #   make check              same, plus lint, generated-data and reproducibility checks
-#   make slides TALK=x      one variant (also: notes script handout trans article)
+#   make slides TALK=x      one variant (also: dark notes script handout trans article)
 #   make new SLUG=x TITLE="..."   scaffold talks/x/talk.tex from starter/
 #   make watch TALK=x       recompile the slides on every save
 #   make present TALK=x     open the notes build in pdfpc (presenter + audience screens)
-#   make tokens [VISUALS=../visuals]   regenerate tex/yjtokens.tex (optionally sync first)
+#   make tokens             regenerate tex/yjtokens.tex from theme-tokens.json
 PY ?= python3
 TALK ?=
-VARIANTS := slides notes script handout trans article
+VARIANTS := slides dark notes script handout trans article
 
 .PHONY: all check $(VARIANTS) new watch present tokens clean
 
@@ -34,7 +34,7 @@ present:
 	pdfpc --notes=right talks/$(TALK)/build/talk-notes.pdf
 
 tokens:
-	$(PY) scripts/sync_tokens.py $(if $(VISUALS),--sync $(VISUALS))
+	$(PY) scripts/sync_tokens.py
 
 clean:
 	rm -rf talks/*/build

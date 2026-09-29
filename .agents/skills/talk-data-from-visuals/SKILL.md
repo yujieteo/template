@@ -1,9 +1,9 @@
 ---
 name: talk-data-from-visuals
-description: Bring data, numbers, or design tokens from the sibling visuals repo into a talk: snapshot the source, write derive.py, emit CSV and numbers.tex, and keep them verifiable.
+description: Bring data or numbers from the sibling visuals repo into a talk: snapshot the source, write derive.py, emit CSV and numbers.tex, and keep them verifiable.
 ---
 
-# Data and tokens from visuals
+# Data from visuals
 
 Talks never read the visuals repo at build time. They keep a snapshot, and a
 script derives everything the slides show. The pattern is
@@ -36,8 +36,9 @@ Prefix them per talk.
 then read the diff of `data/`. If a headline number moved, re-read every
 frame and note that says it; the macro updates the number, not the claim.
 
-## Design tokens
+## Colours in charts
 
-`make tokens VISUALS=../visuals` copies `design-tokens.json` and regenerates
-`tex/yjtokens.tex`. Colour names map `colors.<key>` to `yj<Key>`. Fonts in the
-tokens (Inter) are web fonts; slides use Latin Modern Sans, deliberately.
+Use the theme's names, never hex values: `yjForeground`, `yjAccent` (clay,
+the one thing to look at), `yjBlue`, `yjGreen`, `yjSecondary` for labels,
+`yjBorder` for reference bands. The `yj` pgfplots style cycles series in that
+order. Named colours switch automatically in the dark variant.

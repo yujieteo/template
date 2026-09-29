@@ -3,17 +3,19 @@
 % Load it straight after \documentclass{beamerswitch}. The build compiles the
 % same talk.tex several times; the jobname suffix picks the output:
 %
-%   talk-slides   projector slides, with overlays        (beamerswitch)
-%   talk-handout  3 slides per page with lines for notes  (beamerswitch)
-%   talk-trans    one page per frame, no overlays         (beamerswitch)
-%   talk-article  the talk as a written article          (beamerswitch)
-%   talk-notes    slides + notes side by side, for pdfpc  (this package)
-%   talk-script   notes only, one page per slide, to print (this package)
+%   talk-slides   projector slides, light, with overlays      (beamerswitch)
+%   talk-dark     projector slides, dark, with overlays       (this package)
+%   talk-notes    slides + notes side by side, for pdfpc      (this package)
+%   talk-script   notes only, one page per frame, to print    (this package)
+%   talk-handout  3 frames per A4 page with ruled note space  (beamerswitch)
+%   talk-trans    one page per frame, no overlays             (beamerswitch)
+%   talk-article  the talk as a written article              (beamerswitch)
 %
-% It also makes pdfLaTeX output byte-reproducible and applies the colours from
-% yjtokens.tex, which is generated from the visuals repo's design tokens.
+% Look: warm editorial. Ivory paper, ink text, one clay accent, Palatino
+% for text and maths. Colours come from yjtokens.tex (theme-tokens.json).
+% It also makes pdfLaTeX output byte-reproducible.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{yjtalk}[2026/09/29 v1.0 One-source beamerswitch talks]
+\ProvidesPackage{yjtalk}[2026/09/30 v2.0 One-source beamerswitch talks]
 
 \@ifclassloaded{beamerswitch}{}{%
   \PackageError{yjtalk}{Load yjtalk after \string\documentclass{beamerswitch}}{}}
@@ -29,17 +31,23 @@
 \fi
 
 % ---------------------------------------------------------------- variant
-% beamerswitch sets \JobName (the jobname without quotes). The two note
-% variants end in suffixes beamerswitch does not know, so it compiles them in
-% beamer mode; we add the note layout here.
+% beamerswitch sets \JobName and picks the mode for -slides, -handout, -trans
+% and -article. Any other suffix compiles in beamer mode; we read ours here.
 \newif\ifyj@notes
 \newif\ifyj@script
+\newif\ifyj@dark
 \IfEndWith*{\JobName}{-notes}{\yj@notestrue}{}
 \IfEndWith*{\JobName}{-script}{\yj@scripttrue}{}
+\IfEndWith*{\JobName}{-dark}{\yj@darktrue}{}
+
+% Section divider frames between sections; \yjsectionpagesfalse turns them off.
+\newif\ifyjsectionpages
+\yjsectionpagestrue
 
 % ---------------------------------------------------------------- packages
 \RequirePackage[T1]{fontenc}
-\RequirePackage{lmodern}
+\RequirePackage[sc]{mathpazo}
+\RequirePackage{microtype}
 \RequirePackage{xcolor}
 \RequirePackage{amsmath,amssymb}
 \RequirePackage{booktabs}
@@ -50,29 +58,24 @@
 \pgfplotsset{compat=1.18}
 \RequirePackage{pgfpages}
 \input{yjtokens.tex}
+\ifyj@dark\yjusepalette{D}\else\yjusepalette{L}\fi
 
-% Shared chart style: thin grey axes, direct labels, token colours.
+% Shared chart style: hairline axes, direct labels, series in a fixed order
+% (ink, clay, blue, green) so a colour means the same thing on every slide.
 \pgfplotsset{
   yj/.style={
     axis lines=left,
-    axis line style={yjSecondary},
-    tick style={yjSecondary},
+    axis line style={yjMuted, line width=0.5pt},
+    tick style={yjMuted},
     tick label style={font=\footnotesize, text=yjSecondary},
     label style={font=\footnotesize, text=yjSecondary},
-    every axis plot/.append style={line width=1.2pt},
+    every axis plot/.append style={line width=1.3pt},
+    cycle list={{yjForeground},{yjAccent},{yjBlue},{yjGreen}},
     grid=none,
     clip=false,
     scaled ticks=false,
   },
 }
-
-% ---------------------------------------------------------------- helpers
-% \yjsource{text}: the source line of a chart slide. Printed in the footline
-% on slides and as a small line in the article.
-\gdef\yj@source{}
-\newcommand{\yjsource}[1]{\gdef\yj@source{#1}}
-\mode<article>{\renewcommand{\yjsource}[1]{\par{\small\color{yjSecondary}#1\par}}}
-\AtBeginEnvironment{frame}{\gdef\yj@source{}}
 
 % TikZ: visible on=<2-> shows a node or path from step 2, keeping its space.
 \tikzset{
@@ -81,58 +84,151 @@
   alt/.code args={<#1>#2#3}{\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}},
 }
 
+% ---------------------------------------------------------------- helpers
+% \yjsource{text}: the source line of a chart slide. Printed in the footline
+% on slides and as a small line in the article.
+\gdef\yj@source{}
+\newcommand{\yjsource}[1]{\gdef\yj@source{#1}}
+\mode<article>{\renewcommand{\yjsource}[1]{\par{\footnotesize\color{yjSecondary}#1\par}}}
+\AtBeginEnvironment{frame}{\gdef\yj@source{}}
+
 % \yjkey{text}: the one thing to remember from a slide, in the accent colour.
-\newcommand{\yjkey}[1]{{\color{yjSelected}\ifmmode\boldsymbol{#1}\else\bfseries #1\fi}}
+\newcommand{\yjkey}[1]{{\color{yjAccentText}\ifmmode\boldsymbol{#1}\else\bfseries #1\fi}}
+
+% Section numbers print as two digits: 01, 02, ...
+\newcommand{\yj@twodigits}[1]{\ifnum#1<10 0\fi\number#1}
+
+% \yjlabel{text}: a small-caps kicker, as above a frame title.
+\newcommand{\yjlabel}[1]{{\color{yjAccentText}\scshape #1}}
 
 % ---------------------------------------------------------------- slides
 \mode<presentation>{
+  \usefonttheme{serif}
   \setbeamertemplate{navigation symbols}{}
-  \usefonttheme[onlymath]{serif}
+  \setbeamersize{text margin left=12mm, text margin right=12mm}
+
+  \setbeamercolor{background canvas}{bg=yjBackground}
   \setbeamercolor{normal text}{fg=yjForeground,bg=yjBackground}
-  \setbeamercolor{structure}{fg=yjMark}
-  \setbeamercolor{alerted text}{fg=yjSelected}
+  \setbeamercolor{structure}{fg=yjAccent}
+  \setbeamercolor{alerted text}{fg=yjAccentText}
   \setbeamercolor{frametitle}{fg=yjForeground}
   \setbeamercolor{title}{fg=yjForeground}
   \setbeamercolor{subtitle}{fg=yjSecondary}
-  \setbeamercolor{block title}{fg=yjForeground,bg=yjBorder}
+  \setbeamercolor{block title}{fg=yjAccentText,bg=yjSurface}
   \setbeamercolor{block body}{fg=yjForeground,bg=yjSurface}
-  \setbeamercolor{block title example}{fg=yjMark}
-  \setbeamercolor{block title alerted}{fg=yjSelected}
-  \setbeamerfont{frametitle}{series=\bfseries,size=\Large}
-  \setbeamerfont{title}{series=\bfseries,size=\huge}
-  \setbeamertemplate{itemize items}{\color{yjMark}\raisebox{0.15ex}{\tiny$\blacksquare$}}
-  \setbeamertemplate{enumerate items}[default]
-  \setbeamertemplate{blocks}[rounded]
+  \setbeamercolor{block title example}{fg=yjBlue,bg=yjSurface}
+  \setbeamercolor{block body example}{fg=yjForeground,bg=yjSurface}
+  \setbeamercolor{block title alerted}{fg=yjAccentText,bg=yjSurface}
+  \setbeamercolor{block body alerted}{fg=yjForeground,bg=yjSurface}
+  \setbeamercolor{section in toc}{fg=yjForeground}
+  \setbeamercolor{button}{fg=yjBackground,bg=yjAccentText}
+  \setbeamercolor{bibliography entry author}{fg=yjForeground}
+  \setbeamercolor{bibliography entry note}{fg=yjSecondary}
+  \setbeamercolor{bibliography item}{fg=yjSecondary}
+
+  \setbeamerfont{frametitle}{size=\LARGE,series=\mdseries}
+  \setbeamerfont{title}{size=\Huge,series=\mdseries}
+  \setbeamerfont{subtitle}{size=\large,shape=\itshape}
+  \setbeamerfont{block title}{series=\bfseries,size=\normalsize}
+  \setbeamerfont{footline}{size=\scriptsize}
+
+  % Lists: a small clay disc, then a muted dash for the second level.
+  \setbeamertemplate{itemize item}{\raisebox{0.28ex}{\tikz\fill[yjAccent] (0,0) circle (1.5pt);}}
+  \setbeamertemplate{itemize subitem}{\color{yjMuted}--}
+  \setbeamertemplate{enumerate item}{\color{yjAccentText}\insertenumlabel.}
+  \setbeamertemplate{enumerate subitem}{\color{yjSecondary}\insertsubenumlabel.}
+  \setlength{\leftmargini}{1.4em}
+  \setbeamertemplate{blocks}[rounded][shadow=false]
+  \setbeamertemplate{section in toc}{%
+    {\color{yjAccentText}\yj@twodigits{\inserttocsectionnumber}}%
+    \hspace{1.2em}\inserttocsection\par\vskip0.4ex}
+  \setbeamertemplate{bibliography item}{\insertbiblabel}
+  \setbeamertemplate{caption}[numbered]
+
+  % Frame title: small-caps section kicker, then the title in large roman.
   \setbeamertemplate{frametitle}{%
-    \vskip2ex\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}%
-    \insertframetitle\par\vskip0.5ex}
+    \vskip4.5mm
+    \ifx\insertsectionhead\@empty\else
+      {\usebeamerfont{footline}\color{yjAccentText}\scshape
+        \yj@twodigits{\insertsectionnumber}\enspace\textperiodcentered\enspace
+        \insertsectionhead\par}\vskip1.2ex
+    \fi
+    {\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\raggedright
+      \insertframetitle\par}
+    \vskip1.5ex}
+
+  % Footline: short title left, source line (if any) in between, page right.
   \setbeamertemplate{footline}{%
+    \usebeamerfont{footline}\color{yjSecondary}%
     \leavevmode\hbox to\paperwidth{%
-      \hskip1.2em{\tiny\color{yjSecondary}\yj@source}\hfill
-      {\tiny\color{yjSecondary}\insertframenumber/\inserttotalframenumber}%
-      \hskip1.2em}\vskip1.2ex}
+      \hskip12mm
+      \ifx\yj@source\@empty
+        {\scshape\insertshorttitle}%
+      \else
+        \parbox[b]{0.78\paperwidth}{\raggedright\yj@source}%
+      \fi
+      \hfill
+      \insertframenumber\,/\,\inserttotalframenumber
+      \hskip12mm}%
+    \vskip5mm}
+
+  % Title page: kicker, large roman title, italic subtitle, clay rule, byline.
   \setbeamertemplate{title page}{%
-    \vfill
-    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
-    \ifx\insertsubtitle\@empty\else
-      \vskip1ex{\large\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
-    \fi
+    \vskip0pt plus 1fill
+    {\usebeamerfont{footline}\color{yjAccentText}\scshape\insertinstitute\par}
     \vskip3ex
-    {\color{yjMark}\rule{3em}{2pt}}\par\vskip2ex
-    {\insertauthor\par}
-    \vskip0.5ex
-    {\small\color{yjSecondary}\insertinstitute\par\insertdate\par}
-    \vfill}
-  % A note page: which slide it belongs to, then the notes in large type.
-  \setbeamertemplate{note page}{%
-    \vskip1.5ex
-    {\scriptsize\color{yjSecondary}%
-      Slide \insertframenumber\quad\insertframetitle\par}
-    \ifyj@script
-      \vskip1ex\insertslideintonotes{0.4}\par
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\raggedright\inserttitle\par}
+    \ifx\insertsubtitle\@empty\else
+      \vskip2ex{\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\raggedright\insertsubtitle\par}%
     \fi
-    \vskip1ex
-    {\small\setlength{\parskip}{0.6ex}\insertnote\par}}
+    \vskip5ex
+    {\color{yjAccent}\rule{14mm}{1.2pt}}\par
+    \vskip2.5ex
+    {\large\insertauthor\par}
+    \vskip0.6ex
+    {\small\color{yjSecondary}\insertdate\par}
+    \vskip0pt plus 1.4fill}
+
+  % Section divider: big clay numeral and the section name, not numbered.
+  % Live slides only: it would waste a slot in the handout and the script.
+  \AtBeginSection[]{%
+    \ifyjsectionpages
+      \begin{frame}<handout:0|trans:0>[plain,noframenumbering]
+        \vskip0pt
+        {\usebeamerfont{footline}\color{yjSecondary}\scshape\insertshorttitle\par}
+        \vskip0pt plus 1fill
+        {\fontsize{60}{60}\selectfont\color{yjAccent}\yj@twodigits{\thesection}\par}
+        \vskip2ex
+        {\color{yjBorder}\rule{\linewidth}{0.5pt}}\par
+        \vskip3ex
+        {\usebeamerfont{title}\raggedright\insertsectionhead\par}
+        \vskip0pt plus 1.4fill
+        \note{Section \thesection: \insertsectionhead. Pause; say in one
+          sentence what this part answers.}
+      \end{frame}
+    \fi}
+
+  % A note page: kicker with the slide number and title, a hairline, then
+  % (script) the slide beside the notes, or (notes) the notes in large type.
+  \setbeamertemplate{note page}{%
+    \vskip6mm
+    \parbox{\linewidth}{\raggedright
+      {\usebeamerfont{footline}\color{yjAccentText}\scshape slide \insertframenumber}%
+      \hskip1.2em{\color{yjForeground}\insertframetitle}}
+    \vskip1.2ex{\color{yjBorder}\hrule height 0.5pt}\vskip3ex
+    \ifyj@script
+      \begin{minipage}[t]{0.46\linewidth}
+        \vskip0pt
+        \fcolorbox{yjBorder}{yjBackground}{\insertslideintonotes{0.36}}
+      \end{minipage}\hfill
+      \begin{minipage}[t]{0.5\linewidth}
+        \vskip0pt\small\setlength{\parskip}{0.8ex}\raggedright\insertnote\par
+      \end{minipage}
+    \else
+      {\large\setlength{\parskip}{1ex}\raggedright\insertnote\par}
+    \fi}
+  \setbeamercolor{note page}{bg=yjBackground,fg=yjForeground}
+  \setbeamercolor{note title}{bg=yjSurface,fg=yjForeground}
 }
 
 % notes: every slide page gets its notes on a second screen to the right;
@@ -140,25 +236,138 @@
 \ifyj@notes
   \setbeameroption{show notes on second screen=right}
 \fi
+
+% ---------------------------------------------------------------- handout
 % script: one note page per frame. Switching to handout mode collapses the
-% overlays; defining \beamerswitch@nup stops beamerswitch adding its
-% multi-slide page layout.
+% overlays; defining \beamerswitch@nup stops beamerswitch adding its page
+% layout.
+%
+% handout: our own A4 layout. Three frames down the left, ruled lines for
+% notes on the right, a running header with title and byline, and a page
+% footer. The decoration is drawn from beamerswitch's per-page hook
+% (\beamerswitch@footer, run inside every physical page), so it only relies
+% on beamerswitch and pgfpages.
+\def\yj@hx{16mm}           % left margin
+\def\yj@hw{104mm}          % slide thumbnail width (16:9)
+\def\yj@hh{58.5mm}         % slide thumbnail height
+\def\yj@htop{262mm}        % top of the first slot
+\def\yj@hstep{82mm}        % distance between slots
+\newcounter{yj@hpage}
+
+\newcommand{\yj@slotcenter}[1]{%
+  \pgfpoint{\yj@hx + 0.5*\yj@hw}{\yj@htop - (#1-1)*\yj@hstep - 0.5*\yj@hh}}
+
+\pgfpagesdeclarelayout{yj handout}{}{%
+  \pgfpagesphysicalpageoptions{%
+    logical pages=3, physical height=297mm, physical width=210mm}%
+  \pgfpageslogicalpageoptions{1}{resized width=\yj@hw, resized height=\yj@hh, center=\yj@slotcenter{1}}%
+  \pgfpageslogicalpageoptions{2}{resized width=\yj@hw, resized height=\yj@hh, center=\yj@slotcenter{2}}%
+  \pgfpageslogicalpageoptions{3}{resized width=\yj@hw, resized height=\yj@hh, center=\yj@slotcenter{3}}%
+}
+
+\newcommand{\yj@handoutdecor}{%
+  \stepcounter{yj@hpage}%
+  \count@=\beamer@endpageofdocument\relax
+  \advance\count@ by 2\relax
+  \divide\count@ by 3\relax
+  \edef\yj@hpages{\the\count@}%
+  \setbox\z@\hbox{%
+    \begin{tikzpicture}[x=1mm, y=1mm, font=\footnotesize]
+      \useasboundingbox (0,0) rectangle (210,297);
+      % header
+      \node[anchor=base west, inner sep=0, text=yjLForeground, font=\large]
+        at (16,281) {\insertshorttitle};
+      \node[anchor=base east, inner sep=0, text=yjLSecondary]
+        at (194,281) {\insertshortauthor\enspace\textperiodcentered\enspace\insertshortdate};
+      \draw[yjLAccent, line width=0.9pt] (16,275) -- (30,275);
+      \draw[yjLBorder, line width=0.4pt] (30,275) -- (194,275);
+      % slots that hold a frame on this page
+      \foreach \slot in {1,2,3} {
+        \pgfmathtruncatemacro{\yj@frame}{(\value{yj@hpage}-1)*3 + \slot}
+        \ifnum\yj@frame>\beamer@endpageofdocument\relax\else
+          \pgfmathsetmacro{\yj@top}{262 - (\slot-1)*82}
+          \draw[yjLBorder, line width=0.5pt, rounded corners=1.2mm]
+            (16,\yj@top) rectangle (120,\yj@top-58.5);
+          \node[anchor=base west, inner sep=0, text=yjLAccentText, font=\scriptsize\scshape]
+            at (128,\yj@top-3) {notes};
+          \foreach \line in {1,...,7} {
+            \draw[yjLBorder, line width=0.4pt]
+              (128,\yj@top-3-7.8*\line) -- (194,\yj@top-3-7.8*\line);
+          }
+        \fi
+      }
+      % footer
+      \node[anchor=base west, inner sep=0, text=yjLSecondary, font=\scriptsize\scshape]
+        at (16,12) {\insertshorttitle};
+      \node[anchor=base east, inner sep=0, text=yjLSecondary, font=\scriptsize]
+        at (194,12) {\arabic{yj@hpage}\,/\,\yj@hpages};
+    \end{tikzpicture}}%
+  \pgfsys@beginscope
+  \pgfsys@hbox\z@
+  \pgfsys@endscope}
+
 \ifyj@script
   \gdef\beamer@currentmode{handout}
   \def\beamerswitch@nup{1}
   \setbeameroption{show only notes}
 \else
-  % handout: 3 slides per A4 page, framed, with room to write beside each.
-  \handoutlayout{nup=3plus,border}
+  \def\beamerswitch@nup{3}
+  \mode<handout>{%
+    \pgfpagesuselayout{yj handout}%
+    \def\beamerswitch@footer{\yj@handoutdecor}}
 \fi
 
 % ---------------------------------------------------------------- article
 \mode<article>{
-  \RequirePackage{microtype}
-  \RequirePackage[margin=28mm]{geometry}
-  \hypersetup{colorlinks=true,linkcolor=yjMark,urlcolor=yjMark,citecolor=yjMark}
-  \setlength{\parskip}{0.5ex}
+  \RequirePackage[margin=28mm, top=32mm]{geometry}
+  \RequirePackage{titlesec}
+  \RequirePackage{fancyhdr}
+  \linespread{1.08}
+  \setlength{\parskip}{0.6ex}
   \setlength{\parindent}{0pt}
+  \hypersetup{colorlinks=true,linkcolor=yjAccentText,urlcolor=yjAccentText,citecolor=yjAccentText}
+
+  % Sections: clay roman numeral, then the heading in large roman.
+  \titleformat{\section}{\LARGE\mdseries}
+    {\color{yjAccent}\yj@twodigits{\value{section}}}{0.8em}{}
+  \titlespacing*{\section}{0pt}{4ex plus 1ex}{1.5ex}
+  \titleformat{\subsection}{\large\itshape}{\thesubsection}{0.8em}{}
+
+  % beamer's title macros do not exist in article mode: keep our own copies.
+  \gdef\yj@subtitle{}\gdef\yj@institute{}
+  \def\subtitle{\@dblarg\yj@setsubtitle}
+  \long\def\yj@setsubtitle[#1]#2{\gdef\yj@subtitle{#2}}
+  \def\institute{\@dblarg\yj@setinstitute}
+  \long\def\yj@setinstitute[#1]#2{\gdef\yj@institute{#2}}
+
+  % Running header and footer.
+  \pagestyle{fancy}
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \fancyhead[L]{\footnotesize\color{yjSecondary}\scshape\@title}
+  \fancyhead[R]{\footnotesize\color{yjSecondary}\@author}
+  \fancyfoot[R]{\footnotesize\color{yjSecondary}\thepage}
+
+  % Title block: kicker, large title, italic subtitle, clay rule, byline.
+  \renewcommand{\maketitle}{%
+    \thispagestyle{empty}%
+    {\footnotesize\color{yjAccentText}\scshape\yj@institute\par}
+    \vskip2.5ex
+    {\fontsize{28}{32}\selectfont\raggedright\@title\par}
+    \ifx\yj@subtitle\@empty\else
+      \vskip1.5ex{\Large\itshape\color{yjSecondary}\raggedright\yj@subtitle\par}%
+    \fi
+    \vskip3ex{\color{yjAccent}\rule{14mm}{1.2pt}}\par\vskip1.5ex
+    {\large\@author}\enspace{\color{yjSecondary}\textperiodcentered\enspace\@date}\par
+    \vskip5ex}
+
+  % Frames in the article: the frame title as an italic run-in heading with
+  % a clay dash, so slides read as figures within the prose.
+  \setbeamertemplate{frametitle}{%
+    \par\vskip2ex\noindent{\color{yjAccent}\rule[0.6ex]{1.4em}{0.8pt}}\enspace
+    {\large\itshape\insertframetitle}\par\vskip0.8ex}
+  \setbeamertemplate{block begin}{%
+    \par\vskip\medskipamount\noindent{\color{yjAccentText}\bfseries\insertblocktitle}\par\noindent\ignorespaces}
 }
 
 \endinput

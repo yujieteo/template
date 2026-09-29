@@ -14,10 +14,18 @@ beamerswitch reads the jobname suffix: `-slides`, `-handout`, `-trans`,
 `-article` pick beamer's mode. Any other suffix compiles in beamer mode, and
 `yjtalk.sty` detects two more with `\IfEndWith*{\JobName}{...}`:
 
+- `-dark`: the dark palette;
 - `-notes`: `\setbeameroption{show notes on second screen=right}`;
 - `-script`: switches to handout mode (`\gdef\beamer@currentmode{handout}`) so
   overlays collapse, defines `\beamerswitch@nup` so beamerswitch adds no page
-  layout, then `\setbeameroption{show only notes}`.
+  layout, then `\setbeameroption{show only notes}`;
+- `-handout`: our pgfpages layout `yj handout` (3 frames down an A4 page) and
+  `\yj@handoutdecor`, run from beamerswitch's per-page hook
+  `\beamerswitch@footer`, which draws the header, frame borders, ruled note
+  lines for filled slots only, and the page footer.
+
+Section dividers come from `\AtBeginSection` and are excluded from the
+handout, script and trans (`<handout:0|trans:0>`) so page counts still agree.
 
 ## Add a variant
 
@@ -30,8 +38,15 @@ beamerswitch reads the jobname suffix: `-slides`, `-handout`, `-trans`,
 
 ## Change the theme
 
-- Colours only through `yjtokens.tex` names; new colours go into
-  `design-tokens.json` upstream in visuals first, then `make tokens`.
+- Colours only through the working names (`yjBackground`, `yjAccent`, ...).
+  Add or change a colour in `theme-tokens.json` for both `light` and `dark`,
+  run `make tokens`, and check contrast: body text at least 4.5:1 and chart
+  marks at least 3:1 against `background` in both modes.
+- The dark variant only swaps the palette (`\yjusepalette{D}`); anything drawn
+  with a named colour follows. Handouts always use the light palette
+  (`yjL...` names) because they are printed.
+- Fonts: Palatino for text and maths (`mathpazo`), from
+  texlive-fonts-recommended. A new font must be in a Debian package CI installs.
 - Keep `\mode<presentation>{}` for slide templates and `\mode<article>{}` for
   article layout; an unguarded beamer command breaks the article.
 - Keep the determinism block (`\pdftrailerid{}`, `\pdfinfoomitdate`,

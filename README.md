@@ -1,27 +1,37 @@
 # One-source beamer talks
 
 Write a talk once, in one `talk.tex`, and build every output from it: projector
-slides, slides with presenter notes, a printable script, an audience handout,
-transparencies, and a written article. The build is deterministic: the same
+slides in light and dark, slides with presenter notes, a printable script, an
+audience handout, transparencies, and a written article. The build is deterministic: the same
 source and TeX Live produce byte-identical PDFs, and CI proves it on every push.
 
 It uses [beamerswitch](https://ctan.org/pkg/beamerswitch), which picks the
-beamer mode from the jobname suffix, so one file compiles six ways without
+beamer mode from the jobname suffix, so one file compiles seven ways without
 edits. The approach follows the style of [Ingo Blechschmidt's
 talks](https://www.ingo-blechschmidt.eu/): slides, handout and article all come
-from one source file. Colours come from the
-[visuals](https://github.com/yujieteo/visuals) repo's `design-tokens.json`, so
-slides and web visualizations look alike.
+from one source file. Chart data can come from the
+[visuals](https://github.com/yujieteo/visuals) repo.
+
+## Look
+
+A warm editorial theme: ivory paper, ink text and a single clay accent, with
+Palatino for both text and maths. Frame titles are large roman type under a
+small-caps section kicker; sections open with a numbered divider slide; lists
+use clay markers; blocks sit on a soft surface tint. The dark variant swaps
+the palette for charcoal paper and warm light text; every named colour follows
+it, so charts need no changes. Colours live in `theme-tokens.json` (both
+palettes, same keys) and are checked for contrast; handouts always print in
+the light palette.
 
 ## Quick start
 
 ```sh
 sudo apt-get install texlive-latex-extra texlive-latex-recommended \
-  texlive-fonts-recommended texlive-pictures latexmk lmodern cm-super
+  texlive-fonts-recommended texlive-pictures latexmk cm-super
 make check                                  # build and verify both example talks
 make new SLUG=my-talk TITLE="My claim"      # scaffold talks/my-talk/talk.tex
 make watch TALK=my-talk                     # recompile slides on save
-make check TALK=my-talk                     # all six outputs, verified
+make check TALK=my-talk                     # all seven outputs, verified
 make present TALK=my-talk                   # present with pdfpc
 ```
 
@@ -31,15 +41,18 @@ Outputs land in `talks/<slug>/build/` (git-ignored), with a `SHA256SUMS`.
 
 | File | Mode | For |
 | --- | --- | --- |
-| `talk-slides.pdf` | beamer | the projector; every overlay step is a page |
+| `talk-slides.pdf` | beamer | the projector, light; every overlay step is a page |
+| `talk-dark.pdf` | beamer, dark palette | the projector in a dark room, or a dark-themed venue |
 | `talk-notes.pdf` | beamer + notes on a second screen | presenting: `pdfpc --notes=right talk-notes.pdf` shows slides to the room, notes to you |
-| `talk-script.pdf` | handout + notes only | a printed script: one page per frame, slide thumbnail and notes |
-| `talk-handout.pdf` | handout | the audience: 3 frames per A4 page, overlays collapsed, room to write |
+| `talk-script.pdf` | handout + notes only | a printed script: one page per frame, the slide beside its notes |
+| `talk-handout.pdf` | handout | the audience: A4 with a running header, 3 frames down the left, ruled note lines beside each, page footer |
 | `talk-trans.pdf` | trans | one page per frame, no overlays |
-| `talk-article.pdf` | article | readers who were not there: frames plus the prose between them |
+| `talk-article.pdf` | article | readers who were not there: styled title block, numbered sections, frames set as figures within the prose |
 
 `slides`, `handout`, `trans` and `article` are beamerswitch's own suffixes.
-`notes` and `script` are added by `tex/yjtalk.sty`.
+`dark`, `notes` and `script` are added by `tex/yjtalk.sty`. Section divider
+slides appear only in `slides`, `dark` and `notes`; `\yjsectionpagesfalse` in
+the preamble turns them off.
 
 ## Writing a talk
 
@@ -88,8 +101,10 @@ talks/<slug>/derive.py                  # snapshot -> CSVs + numbers.tex
 `derive.py` regenerates; `derive.py --verify` (run by the build) fails when
 outputs are stale. Talks build without a visuals checkout.
 
-Design tokens work the same way: `make tokens VISUALS=../visuals` copies
-`design-tokens.json` and regenerates `tex/yjtokens.tex`.
+Colours: edit `theme-tokens.json` (keep `light` and `dark` in step), then
+`make tokens` regenerates `tex/yjtokens.tex`; the build fails if it is stale.
+In charts use the working names `yjForeground`, `yjAccent`, `yjBlue`,
+`yjGreen`, `yjSecondary`, `yjBorder`, never hex values.
 
 ## Reproducibility
 
@@ -104,12 +119,12 @@ for a given TeX Live release; a different release may produce different bytes.
 ```
 talks/<slug>/talk.tex    the one source per talk
 starter/talk.tex         template for make new
-tex/yjtalk.sty           modes, notes, theme, determinism
-tex/yjtokens.tex         colours, generated from design-tokens.json
-design-tokens.json       snapshot of visuals/design-tokens.json
+tex/yjtalk.sty           modes, theme, notes, handout layout, determinism
+tex/yjtokens.tex         colours, generated from theme-tokens.json
+theme-tokens.json        light and dark palettes
 scripts/build.py         lint, compile, verify
 scripts/new_talk.py      scaffold a talk
-scripts/sync_tokens.py   tokens -> tex/yjtokens.tex
+scripts/sync_tokens.py   theme-tokens.json -> tex/yjtokens.tex
 .agents/skills/          playbooks for agents working in this repo
 ```
 
