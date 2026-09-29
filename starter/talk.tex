@@ -1,0 +1,50 @@
+% The only source of this talk. `make TALK={{SLUG}}` builds slides, notes,
+% script, handout, transparencies and article from it. See README.md.
+%   - Text outside frames appears only in the article.
+%   - Every frame carries a \note{...} for the presenter.
+%   - Numbers on slides come from generated files (data/numbers.tex), not typing.
+\documentclass[
+  beameroptions={aspectratio=169,ignorenonframetext,11pt},
+  articleoptions={11pt,a4paper},
+]{beamerswitch}
+\usepackage{yjtalk}
+
+\title{{{TITLE}}}
+\subtitle{One sentence the audience should repeat afterwards}
+\author{{{AUTHOR}}}
+\institute{Venue or event}
+\date{{{DATE}}}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+  \note{Opening line. Say who this is for and what they will be able to do
+    at the end. State the total time.}
+\end{frame}
+
+\mode<article>{\maketitle}
+
+\section{Question}
+
+Article-only prose goes here, between frames. It carries the argument in full
+sentences for readers who were not in the room.
+
+\begin{frame}{State the finding as a full sentence}
+  \begin{itemize}
+    \item One message per frame; the title is the message.
+    \item<2-> Reveal steps with overlays; the handout and script collapse them.
+  \end{itemize}
+  \note{What to stress, what to point at, and the transition: name the
+    question the next frame answers.}
+\end{frame}
+
+\begin{frame}{What to remember}
+  \begin{enumerate}
+    \item First takeaway.
+    \item<2-> Second takeaway.
+  \end{enumerate}
+  \note{Closing line, then stop talking and take questions.}
+\end{frame}
+
+\end{document}

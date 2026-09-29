@@ -1,0 +1,48 @@
+name: Build talks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended \
+            texlive-pictures latexmk cm-super poppler-utils
+
+      # Lints every talk.tex, checks generated data and tokens are current,
+      # builds all seven variants, and rebuilds them to prove identical bytes.
+      - name: Build and verify
+        run: python3 scripts/build.py --check
+
+      # Web deck for every talk (checked), and the video inputs (script,
+      # timings, slide images, scene.py compiled). Rendering the video needs
+      # Manim and runs locally: make video TALK=<slug>.
+      - name: Build web decks and video inputs
+        run: |
+          for talk in talks/*/talk.tex; do
+            slug=$(basename "$(dirname "$talk")")
+            python3 scripts/to_web.py "$slug"
+            python3 scripts/to_manim.py "$slug" --prepare-only
+          done
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: talks
+          path: |
+            talks/*/build/*.pdf
+            talks/*/build/SHA256SUMS
+            talks/*/build/web/

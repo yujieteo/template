@@ -1,0 +1,273 @@
+% Feature gallery: one frame per technique a complex talk needs, each built
+% so every variant (slides, notes, script, handout, trans, article) still
+% comes out right. Copy the frame you need into your own talk.tex.
+%
+% Techniques, in order:
+%   agenda from \tableofcontents          overlays: \pause, \item<n->, \only,
+%   \alert<n>, \uncover, \visible           TikZ diagram revealed in steps
+%   theorem / definition / example blocks  columns with an image
+%   pgfplots with an overlay per series     booktabs table with a row reveal
+%   code listing ([fragile] frame)          several notes per frame (\note[item])
+%   mode-specific content (<handout:0>, \only<article>, \mode<article>)
+%   a frame that exists only on slides      a button that jumps back to it
+%   bibliography                            appendix with backup slides
+\documentclass[
+  beameroptions={aspectratio=169,ignorenonframetext,11pt},
+  articleoptions={11pt,a4paper},
+]{beamerswitch}
+\usepackage{yjtalk}
+\usepackage{listings}
+\mode<presentation>{\usepackage{appendixnumberbeamer}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{yjWarm}\bfseries,
+  commentstyle=\color{yjSecondary}\itshape,
+  stringstyle=\color{yjAccent},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+
+\title{Feature gallery}
+\subtitle{Every technique a complex talk needs, from one source file}
+\author{Teo Yu Jie}
+\institute{beamerswitch template}
+\date{29 September 2026}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+  \note{This talk is a catalogue, not an argument: each frame shows one
+    technique and says in its note how each output treats it.}
+\end{frame}
+
+\mode<article>{\maketitle\tableofcontents}
+
+% --------------------------------------------------------------------------
+\begin{frame}{Agenda}
+  \tableofcontents
+  \note{\texttt{\textbackslash tableofcontents} builds the agenda from
+    \texttt{\textbackslash section} commands placed between frames.
+    Sections also become PDF bookmarks and article headings.}
+\end{frame}
+
+\section{Overlays}
+
+Overlays reveal a frame in steps. The slides and notes outputs keep every
+step; the handout, transparencies and script collapse each frame to its final
+state, so nothing is hidden on paper.
+
+\begin{frame}{Overlays reveal a frame step by step}
+  \begin{itemize}
+    \item<1-> \texttt{\textbackslash item<2->} shows an item from step 2 on.
+    \item<2-> \alert<2>{\texttt{\textbackslash alert<2>}} highlights on step 2 only.
+    \item<3-> \only<3>{\texttt{\textbackslash only<3>} takes no space when hidden.}%
+              \only<4>{\texttt{\textbackslash only<4>} replaces it on step 4.}
+    \item<4-> \uncover<4->{\texttt{\textbackslash uncover} reserves space before it appears.}
+  \end{itemize}
+  \vspace{1ex}
+  \visible<4>{\yjkey{Handout, trans and script show only the final step.}}
+  \note{Click four times. On paper this frame is one page showing step 4,
+    because handout mode collapses overlays.}
+\end{frame}
+
+\begin{frame}{\texttt{\textbackslash pause} steps through a derivation}
+  \begin{align*}
+    (a+b)^2 &= (a+b)(a+b) \\ \pause
+            &= a^2 + ab + ba + b^2 \\ \pause
+            &= a^2 + 2ab + b^2
+  \end{align*}
+  \pause
+  \centering Each \texttt{\textbackslash pause} adds one step.
+  \note{\texttt{\textbackslash pause} is the shortest overlay: everything after
+    it appears one step later. Prefer \texttt{\textbackslash item<n->} in
+    lists, since pauses do not nest.}
+\end{frame}
+
+\section{Diagrams and charts}
+
+\begin{frame}{TikZ diagrams build up with the same overlay syntax}
+  \centering
+  \begin{tikzpicture}[
+      box/.style={draw=yjBorder, fill=yjSurface, rounded corners, minimum width=2.6cm,
+                  minimum height=1cm, font=\small},
+      arr/.style={-Stealth, yjSecondary, thick}]
+    \node[box] (src) {talk.tex};
+    \node[box, right=1.4cm of src, visible on=<2->] (tex) {pdflatex $\times 7$};
+    \node[box, right=1.4cm of tex, visible on=<3->, draw=yjAccent] (pdf) {seven PDFs};
+    \draw[arr, visible on=<2->] (src) -- (tex);
+    \draw[arr, visible on=<3->] (tex) -- (pdf);
+    \node[below=0.4cm of tex, font=\footnotesize, text=yjSecondary, visible on=<2->]
+      {jobname suffix picks the mode};
+  \end{tikzpicture}
+  \note{The \texttt{visible on=<n->} style is defined in yjtalk.sty; it works on
+    any TikZ node or path. In the article the whole diagram shows at once.}
+\end{frame}
+
+\begin{frame}{Charts add one series per step}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[yj, width=11cm, height=5.5cm, xmin=0, xmax=4, ymin=0, ymax=16,
+        xlabel={$x$}, ylabel={$y$}]
+      \addplot[yjForeground, domain=0:4, samples=40] {x^2};
+      \node[anchor=south east, font=\footnotesize] at (axis cs:3.3,10.9) {$x^2$};
+      \only<2->{
+        \addplot[yjWarm, domain=0:4, samples=40] {2^x};
+        \node[anchor=north west, font=\footnotesize, text=yjWarm] at (axis cs:3.4,9.6) {$2^x$};
+      }
+      \only<3->{
+        \fill[yjAccent] (axis cs:2,4) circle[radius=2.5pt];
+        \node[anchor=north west, font=\footnotesize, text=yjAccentText] at (axis cs:2,4) {equal at $x=2$};
+      }
+    \end{axis}
+  \end{tikzpicture}
+  \yjsource{Source lines go in the footline via \texttt{\textbackslash yjsource\{...\}}.}
+  \note{Wrap extra plots in \texttt{\textbackslash only<n->} inside the axis.
+    For data from a CSV, see the Breeden--Litzenberger talk: it reads
+    \texttt{data/curves.csv} with \texttt{\textbackslash pgfplotstableread}.}
+\end{frame}
+
+\section{Structured content}
+
+\begin{frame}{Blocks mark definitions, theorems and examples}
+  \begin{definition}[Convex]
+    $f$ is convex if $f(tx + (1-t)y) \le t f(x) + (1-t) f(y)$ for $t\in[0,1]$.
+  \end{definition}
+  \begin{theorem}<2->[Jensen]
+    For convex $f$, $f(\mathbb{E}X) \le \mathbb{E} f(X)$.
+  \end{theorem}
+  \begin{example}<3->
+    $f(x)=x^2$ gives $(\mathbb{E}X)^2 \le \mathbb{E}X^2$, so variance is non-negative.
+  \end{example}
+  \note{Beamer's theorem environments also work in the article, where they
+    become numbered theorems. Blocks take an overlay spec.}
+\end{frame}
+
+\begin{frame}{Columns put a figure beside its explanation}
+  \begin{columns}[c]
+    \column{0.45\textwidth}
+      \includegraphics[width=\linewidth]{example-image}
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Keep images in \texttt{figures/} beside \texttt{talk.tex}.
+        \item Prefer PDF or SVG-converted PDF over PNG.
+        \item Let the chart fill its column; title carries the message.
+      \end{itemize}
+  \end{columns}
+  \note{The image here is \texttt{example-image} from the mwe package.
+    Replace it with \texttt{figures/your-file.pdf}.}
+\end{frame}
+
+\begin{frame}{Tables reveal one row at a time}
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+    Output  & Pages here & Overlays \\
+    \midrule
+    slides, dark & one per step  & kept \\ \pause
+    notes   & one per step  & kept, notes on the right \\ \pause
+    handout & 3 frames each & collapsed \\
+    script  & one per frame & collapsed \\
+    \bottomrule
+  \end{tabular}
+  \note{\texttt{\textbackslash pause} works between table rows. Keep
+    \texttt{\textbackslash bottomrule} after the last pause so the rule is
+    always drawn.}
+\end{frame}
+
+\begin{frame}[fragile]{Code needs a fragile frame}
+\begin{lstlisting}[language=Python]
+def build(talk):
+    # one source, seven outputs
+    for variant in ("slides", "dark", "notes", "script",
+                    "handout", "trans", "article"):
+        compile(talk, jobname=f"talk-{variant}")
+\end{lstlisting}
+  \note{Any frame with verbatim or listings needs \texttt{[fragile]}. Keep the
+    listing flush left: beamer writes the frame to a temporary file.}
+\end{frame}
+
+\section{Notes and modes}
+
+\begin{frame}{Notes can be a list of cues}
+  \begin{itemize}
+    \item Use \texttt{\textbackslash note[item]\{...\}} for bullet cues.
+    \item Several \texttt{\textbackslash note} calls on one frame stack up.
+  \end{itemize}
+  \note[item]{Time: 30 seconds.}
+  \note[item]{Point at the second bullet.}
+  \note[item]{Transition: which content belongs in which output?}
+\end{frame}
+
+\begin{frame}{\texttt{\textbackslash narration} scripts the video}
+  \begin{itemize}
+    \item \texttt{\textbackslash narration\{...\}} is invisible in every PDF.
+    \item<2-> \texttt{scripts/to\_manim.py} speaks it, one caption per sentence.
+    \item<3-> Each overlay step lands on the next sentence.
+  \end{itemize}
+  \narration{This sentence is the voice-over for this slide. The second
+    sentence reveals the second bullet. The third sentence reveals the last.}
+  \note{Narration is for the audience; notes are for you. The web deck shows
+    narration as its transcript (press C); notes stay in the presenter window.}
+\end{frame}
+
+\begin{frame}{Some content belongs in one output only}
+  \begin{itemize}
+    \item<handout:0> This line is on the slides but not in the handout.
+    \item \only<article>{Only readers of the article see this.}%
+          \only<presentation>{\texttt{\textbackslash only<article>} text is hidden here.}
+    \item Text between frames is article-only (\texttt{ignorenonframetext}).
+  \end{itemize}
+  \note{Mode names: beamer (slides, dark, notes), handout (handout, script), trans,
+    article; presentation means all but article. Put \texttt{<handout:0>} on
+    anything you do not want printed.}
+\end{frame}
+
+\mode<article>{
+  \paragraph{Article-only block.} Wrapping content in
+  \texttt{\textbackslash mode<article>\{...\}} is how you add a longer explanation, a proof, or
+  a figure that would crowd a slide.
+}
+
+\begin{frame}<handout:0|trans:0>[label=live]{A frame that exists only on the live slides}
+  \centering\Large Live demo goes here.
+  \note{\texttt{\textbackslash begin\{frame\}<handout:0|trans:0>} drops this
+    frame from the handout, the script and the transparencies: the script
+    is built in handout mode.}
+\end{frame}
+
+\begin{frame}{References are ordinary \texttt{thebibliography}}
+  \begin{thebibliography}{9}
+    \bibitem{tantau} T.~Tantau, J.~Wright, V.~Miletić.
+      \newblock \emph{The Beamer class}. User guide, CTAN.
+    \bibitem{ball} A.~Ball.
+      \newblock \emph{beamerswitch: convenient mode selection in Beamer documents}. CTAN.
+  \end{thebibliography}
+  \note{Cite with \texttt{\textbackslash cite\{tantau\}} anywhere. For long
+    reference lists, put them in the appendix.}
+\end{frame}
+
+\begin{frame}{What to remember}
+  \begin{enumerate}
+    \item One \texttt{talk.tex}; the jobname picks the output.
+    \item<2-> Overlays for the room, collapsed on paper.
+    \item<3-> A note on every frame; the build refuses frames without one.
+  \end{enumerate}
+  \note{End here in a real talk. Everything after is appendix.}
+\end{frame}
+
+\appendix
+\section*{Appendix}
+
+\begin{frame}{Backup: jumping back to an earlier frame}
+  Appendix frames are not counted in the total on the main slides.
+  \par\medskip
+  \hyperlink{live}{\beamerbutton{Back to the live demo}}
+  \note{appendixnumberbeamer restarts numbering here, so the footer total
+    matches the main talk. The button links to the frame labelled
+    \texttt{live}; use it to answer a question without paging back.}
+\end{frame}
+
+\end{document}

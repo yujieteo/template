@@ -1,0 +1,27 @@
+{
+  "_comment": "Colours for talks. Ivory paper, ink text, navy accent; dark mode is navy paper with light text. Each mode lists the same keys; scripts/sync_tokens.py turns this into tex/yjtokens.tex.",
+  "light": {
+    "background": "#FAF9F5",
+    "surface": "#EEF1F5",
+    "foreground": "#141413",
+    "secondary": "#55585E",
+    "muted": "#9A9DA3",
+    "border": "#DCE1E8",
+    "accent": "#2D63A8",
+    "accent_text": "#1F4E8C",
+    "warm": "#C0653F",
+    "green": "#5F7A45"
+  },
+  "dark": {
+    "background": "#0F1C2E",
+    "surface": "#182A40",
+    "foreground": "#EEF1F5",
+    "secondary": "#AAB6C5",
+    "muted": "#6F7F94",
+    "border": "#26394F",
+    "accent": "#6E9BD1",
+    "accent_text": "#9CBEE8",
+    "warm": "#E39A76",
+    "green": "#9DB985"
+  }
+}

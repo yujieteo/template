@@ -1,0 +1,3 @@
+# Build outputs are reproducible from source: make check.
+talks/*/build/
+__pycache__/
