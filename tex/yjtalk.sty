@@ -1,0 +1,164 @@
+% yjtalk.sty -- one source file, every output of a talk.
+%
+% Load it straight after \documentclass{beamerswitch}. The build compiles the
+% same talk.tex several times; the jobname suffix picks the output:
+%
+%   talk-slides   projector slides, with overlays        (beamerswitch)
+%   talk-handout  3 slides per page with lines for notes  (beamerswitch)
+%   talk-trans    one page per frame, no overlays         (beamerswitch)
+%   talk-article  the talk as a written article          (beamerswitch)
+%   talk-notes    slides + notes side by side, for pdfpc  (this package)
+%   talk-script   notes only, one page per slide, to print (this package)
+%
+% It also makes pdfLaTeX output byte-reproducible and applies the colours from
+% yjtokens.tex, which is generated from the visuals repo's design tokens.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{yjtalk}[2026/09/29 v1.0 One-source beamerswitch talks]
+
+\@ifclassloaded{beamerswitch}{}{%
+  \PackageError{yjtalk}{Load yjtalk after \string\documentclass{beamerswitch}}{}}
+
+% ---------------------------------------------------------------- determinism
+% No timestamps and no random trailer /ID in the PDF. The build also sets
+% SOURCE_DATE_EPOCH and FORCE_SOURCE_DATE=1, which pins \today; talks still
+% write their date by hand.
+\ifdefined\pdftrailerid
+  \pdftrailerid{}
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+\fi
+
+% ---------------------------------------------------------------- variant
+% beamerswitch sets \JobName (the jobname without quotes). The two note
+% variants end in suffixes beamerswitch does not know, so it compiles them in
+% beamer mode; we add the note layout here.
+\newif\ifyj@notes
+\newif\ifyj@script
+\IfEndWith*{\JobName}{-notes}{\yj@notestrue}{}
+\IfEndWith*{\JobName}{-script}{\yj@scripttrue}{}
+
+% ---------------------------------------------------------------- packages
+\RequirePackage[T1]{fontenc}
+\RequirePackage{lmodern}
+\RequirePackage{xcolor}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{booktabs}
+\RequirePackage{tikz}
+\usetikzlibrary{calc,positioning,arrows.meta}
+\RequirePackage{pgfplots}
+\RequirePackage{pgfplotstable}
+\pgfplotsset{compat=1.18}
+\RequirePackage{pgfpages}
+\input{yjtokens.tex}
+
+% Shared chart style: thin grey axes, direct labels, token colours.
+\pgfplotsset{
+  yj/.style={
+    axis lines=left,
+    axis line style={yjSecondary},
+    tick style={yjSecondary},
+    tick label style={font=\footnotesize, text=yjSecondary},
+    label style={font=\footnotesize, text=yjSecondary},
+    every axis plot/.append style={line width=1.2pt},
+    grid=none,
+    clip=false,
+    scaled ticks=false,
+  },
+}
+
+% ---------------------------------------------------------------- helpers
+% \yjsource{text}: the source line of a chart slide. Printed in the footline
+% on slides and as a small line in the article.
+\gdef\yj@source{}
+\newcommand{\yjsource}[1]{\gdef\yj@source{#1}}
+\mode<article>{\renewcommand{\yjsource}[1]{\par{\small\color{yjSecondary}#1\par}}}
+\AtBeginEnvironment{frame}{\gdef\yj@source{}}
+
+% TikZ: visible on=<2-> shows a node or path from step 2, keeping its space.
+\tikzset{
+  invisible/.style={opacity=0, text opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  alt/.code args={<#1>#2#3}{\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}},
+}
+
+% \yjkey{text}: the one thing to remember from a slide, in the accent colour.
+\newcommand{\yjkey}[1]{{\color{yjSelected}\ifmmode\boldsymbol{#1}\else\bfseries #1\fi}}
+
+% ---------------------------------------------------------------- slides
+\mode<presentation>{
+  \setbeamertemplate{navigation symbols}{}
+  \usefonttheme[onlymath]{serif}
+  \setbeamercolor{normal text}{fg=yjForeground,bg=yjBackground}
+  \setbeamercolor{structure}{fg=yjMark}
+  \setbeamercolor{alerted text}{fg=yjSelected}
+  \setbeamercolor{frametitle}{fg=yjForeground}
+  \setbeamercolor{title}{fg=yjForeground}
+  \setbeamercolor{subtitle}{fg=yjSecondary}
+  \setbeamercolor{block title}{fg=yjForeground,bg=yjBorder}
+  \setbeamercolor{block body}{fg=yjForeground,bg=yjSurface}
+  \setbeamercolor{block title example}{fg=yjMark}
+  \setbeamercolor{block title alerted}{fg=yjSelected}
+  \setbeamerfont{frametitle}{series=\bfseries,size=\Large}
+  \setbeamerfont{title}{series=\bfseries,size=\huge}
+  \setbeamertemplate{itemize items}{\color{yjMark}\raisebox{0.15ex}{\tiny$\blacksquare$}}
+  \setbeamertemplate{enumerate items}[default]
+  \setbeamertemplate{blocks}[rounded]
+  \setbeamertemplate{frametitle}{%
+    \vskip2ex\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}%
+    \insertframetitle\par\vskip0.5ex}
+  \setbeamertemplate{footline}{%
+    \leavevmode\hbox to\paperwidth{%
+      \hskip1.2em{\tiny\color{yjSecondary}\yj@source}\hfill
+      {\tiny\color{yjSecondary}\insertframenumber/\inserttotalframenumber}%
+      \hskip1.2em}\vskip1.2ex}
+  \setbeamertemplate{title page}{%
+    \vfill
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+    \ifx\insertsubtitle\@empty\else
+      \vskip1ex{\large\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi
+    \vskip3ex
+    {\color{yjMark}\rule{3em}{2pt}}\par\vskip2ex
+    {\insertauthor\par}
+    \vskip0.5ex
+    {\small\color{yjSecondary}\insertinstitute\par\insertdate\par}
+    \vfill}
+  % A note page: which slide it belongs to, then the notes in large type.
+  \setbeamertemplate{note page}{%
+    \vskip1.5ex
+    {\scriptsize\color{yjSecondary}%
+      Slide \insertframenumber\quad\insertframetitle\par}
+    \ifyj@script
+      \vskip1ex\insertslideintonotes{0.4}\par
+    \fi
+    \vskip1ex
+    {\small\setlength{\parskip}{0.6ex}\insertnote\par}}
+}
+
+% notes: every slide page gets its notes on a second screen to the right;
+% pdfpc splits it (pdfpc --notes=right talk-notes.pdf).
+\ifyj@notes
+  \setbeameroption{show notes on second screen=right}
+\fi
+% script: one note page per frame. Switching to handout mode collapses the
+% overlays; defining \beamerswitch@nup stops beamerswitch adding its
+% multi-slide page layout.
+\ifyj@script
+  \gdef\beamer@currentmode{handout}
+  \def\beamerswitch@nup{1}
+  \setbeameroption{show only notes}
+\else
+  % handout: 3 slides per A4 page, framed, with room to write beside each.
+  \handoutlayout{nup=3plus,border}
+\fi
+
+% ---------------------------------------------------------------- article
+\mode<article>{
+  \RequirePackage{microtype}
+  \RequirePackage[margin=28mm]{geometry}
+  \hypersetup{colorlinks=true,linkcolor=yjMark,urlcolor=yjMark,citecolor=yjMark}
+  \setlength{\parskip}{0.5ex}
+  \setlength{\parindent}{0pt}
+}
+
+\endinput
