@@ -291,7 +291,7 @@ def build_manifest(slug):
         fail("talk-dark.nav disagrees with talk-slides.nav; rebuild both")
 
     used = set()
-    for n, (frame, (a, b)) in enumerate(zip(frames, ranges), start=1):
+    for n, (frame, (a, b)) in enumerate(zip(frames, ranges, strict=True), start=1):
         if frame["kind"] == "title":
             stem = "title"
         elif frame["kind"] == "section":

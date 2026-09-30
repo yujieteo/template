@@ -1,0 +1,21 @@
+# Tool settings only; this repo is not a Python package.
+
+[tool.ruff]
+target-version = "py312"  # the python3 on CI's ubuntu-24.04 runners
+line-length = 120
+# The template's own Python. A talk's derive.py and manim/ belong to that talk.
+include = ["scripts/**/*.py", "manim/**/*.py", "tests/**/*.py"]
+# Tests import scripts/*.py and conftest.py as top-level modules.
+src = ["scripts", "tests"]
+
+[tool.ruff.lint]
+# Ruff's defaults, plus warnings, bugbear, import order and pyupgrade.
+select = ["E4", "E7", "E9", "F", "W", "B", "I", "UP"]
+
+[tool.ruff.lint.isort]
+# manim/ here is the video runtime; `import manim` is the library.
+known-third-party = ["manim"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
