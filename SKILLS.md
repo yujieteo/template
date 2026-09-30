@@ -76,7 +76,8 @@ whose "Use when" matches, and finish with the gates.
 | `tex/`, `starter/`, `theme-tokens.json`, `scripts/` | `make check` (every talk) |
 | `web/shell.html`, `manim/`, `scripts/to_web.py`, `scripts/to_manim.py` | Also rebuild and look at the web deck or video ([talk-web-and-video](.agents/skills/talk-web-and-video/SKILL.md)) |
 
-`make ci` runs everything CI runs: the lint and test jobs, then `make check`.
+`make ci` runs everything CI runs: the lint and test jobs, then `make check`
+and `make decks`.
 
 ## Reply
 
