@@ -1,9 +1,11 @@
 ---
 name: talk-template-maintenance
-description: Change the shared template: the yjtalk.sty theme and modes, the starter talk, the build script, or add an output variant, without breaking any existing talk.
+description: How the shared template works and what a change to it must preserve, covering yjtalk.sty modes and theme, the starter talk, the Python scripts and their tests, output variants, and the web and video runtimes. Use when changing any of those, since a change there reaches every talk.
 ---
 
 # Template maintenance
+
+Playbook: [template-change](../../playbooks/template-change.md).
 
 Every talk depends on `tex/yjtalk.sty`, `starter/talk.tex` and
 `scripts/build.py`. A change there is a change to all talks.
@@ -27,16 +29,18 @@ beamerswitch reads the jobname suffix: `-slides`, `-handout`, `-trans`,
 Section dividers come from `\AtBeginSection` and are excluded from the
 handout, script and trans (`<handout:0|trans:0>`) so page counts still agree.
 
-## Add a variant
+## Where a variant is declared
 
-1. Pick a suffix; detect it in `yjtalk.sty` next to `-notes` and `-script`.
-2. Add it to `VARIANTS` in `scripts/build.py` with a one-line description,
-   and a page-count rule in `build_talk` if one holds.
-3. Add it to the Makefile's `VARIANTS`, the README outputs table, and the
-   mode notes in `talks/feature-gallery/talk.tex` if they change.
-4. `make check`.
+A new suffix is detected in `yjtalk.sty` next to `-notes` and `-script`, and
+listed in:
 
-## Change the theme
+- `VARIANTS` in `scripts/build.py`, with a one-line description, plus a
+  page-count rule in `build_talk` if one holds;
+- the Makefile's `VARIANTS`;
+- the README outputs table;
+- the mode notes in `talks/feature-gallery/talk.tex`, if they change.
+
+## Theme rules
 
 - Colours only through the working names (`yjBackground`, `yjAccent`, ...).
   Add or change a colour in `theme-tokens.json` for both `light` and `dark`,
@@ -46,28 +50,27 @@ handout, script and trans (`<handout:0|trans:0>`) so page counts still agree.
   with a named colour follows. Handouts always use the light palette
   (`yjL...` names) because they are printed.
 - Fonts: Palatino for text and maths (`mathpazo`), from
-  texlive-fonts-recommended. A new font must be in a Debian package CI installs.
+  texlive-fonts-recommended. A new font must be in a Debian package CI
+  installs.
 - Keep `\mode<presentation>{}` for slide templates and `\mode<article>{}` for
   article layout; an unguarded beamer command breaks the article.
 - Keep the determinism block (`\pdftrailerid{}`, `\pdfinfoomitdate`,
   `\pdfsuppressptexinfo`) first. Removing it makes `--check` fail.
 
-## Verify a template change
+## Scripts and their tests
 
-1. `make check` for all talks: both examples must pass unchanged.
-2. Render and look at one page per variant of both examples
-   (`pdftoppm -r 50 -png`), especially notes and script pages.
-3. Scaffold and build a throwaway talk to test the starter:
-   `python3 scripts/new_talk.py zz-smoke && python3 scripts/build.py --check zz-smoke && rm -r talks/zz-smoke`.
-4. Negative test for any new check: break a copy of a talk the way the check
-   targets and confirm the build fails with the intended message.
+`scripts/*.py` are stdlib-only Python 3.12 and have unit tests in `tests/`,
+one file per script (`tests/test_build.py` for `scripts/build.py`). The tests
+cover what runs without TeX: the talk lint, token rendering, the scaffold,
+TeX-to-text and frame parsing, notes and timing maths, and the skills check.
+A behaviour change to a script comes with a test that fails without it.
+`tests/conftest.py` puts `scripts/` on the import path and provides
+`make_talk`, which writes a minimal talk into a temp directory.
 
 ## Shared runtimes
 
 `web/shell.html` (web deck) and `manim/talkscene.py` (video) serve every talk.
-After changing either, rebuild both examples with `to_web.py` and
-`to_manim.py`, drive the web deck in a browser (see talk-web-and-video), and
-look at the video's review frames. `talkscene.py` keeps
-generate-explainer-video's timing API (`begin`, `at`, `finish`, `hold_until`,
-`budget`) and its `timings.json` format; do not diverge from them.
-
+`talkscene.py` keeps generate-explainer-video's timing API (`begin`, `at`,
+`finish`, `hold_until`, `budget`) and its `timings.json` format; do not
+diverge from them. It imports Manim, so ruff lints it but tests do not import
+it.

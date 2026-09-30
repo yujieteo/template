@@ -193,7 +193,7 @@ def choose_timings(out, script):
         timings = json.loads(path.read_text())
         same_ids = [s["id"] for s in timings["scenes"]] == [s["id"] for s in script["scenes"]]
         same_text = all(" ".join(c["text"] for c in t["captions"]).split() == s["narration"].split()
-                        for t, s in zip(timings["scenes"], script["scenes"]))
+                        for t, s in zip(timings["scenes"], script["scenes"], strict=False))
         same_voice = timings.get("voice") == script["voice"]
         if timings.get("voice") != "estimate" and same_ids and same_text and same_voice:
             print(f"timing: Kokoro narration ({timings['voice']}), {timings['total_seconds']:.1f}s")

@@ -23,9 +23,7 @@ import textwrap
 from pathlib import Path
 
 import manimpango
-from manim import (
-    DOWN, UP, FadeIn, FadeOut, ImageMobject, RoundedRectangle, Scene, Text, VGroup, config,
-)
+from manim import DOWN, UP, FadeIn, FadeOut, ImageMobject, RoundedRectangle, Scene, Text, VGroup, config
 
 VIDEO = Path(os.environ.get("TALK_VIDEO_DIR", "."))
 THEME = os.environ.get("TALK_THEME", "dark")
@@ -152,7 +150,7 @@ class TalkScene(Scene):
         # the redraw list at the start of each play()/wait(), so swapping text
         # mid-call would leave ghosts (the same fix as ExplainerScene).
         boxes = [self._caption_box(c["text"]) for c in entries]
-        holder = VGroup(*[VGroup(p, l) for p, l in boxes])
+        holder = VGroup(*[VGroup(panel, label) for panel, label in boxes])
 
         def refresh(_, dt):
             t = self.now

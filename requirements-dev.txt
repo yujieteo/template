@@ -1,0 +1,4 @@
+# Lint and test tools for make lint test and CI. Pinned so both run the same.
+# Markdown lint runs through npx; its version is pinned in the Makefile.
+ruff==0.16.9
+pytest==9.1.1

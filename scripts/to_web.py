@@ -155,7 +155,10 @@ def build(slug):
 
     html = SHELL.read_text()
     description = manifest["subtitle"] or manifest["title"]
-    esc = lambda s: s.replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;")
+
+    def esc(s):
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;")
+
     for key, value in {"TITLE": esc(manifest["title"]), "DESCRIPTION": esc(description),
                        "THEME_CSS": theme_css(json.loads(TOKENS.read_text()))}.items():
         html = html.replace("{{" + key + "}}", value)

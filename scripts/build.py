@@ -118,7 +118,7 @@ def compile_variant(talk_dir, variant, outdir, epoch):
     log_text = log.read_text(errors="replace") if log.is_file() else ""
     problems = []
     if proc.returncode != 0:
-        errors = [l for l in log_text.splitlines() if re.match(r"^(!|.*:\d+: )", l)]
+        errors = [line for line in log_text.splitlines() if re.match(r"^(!|.*:\d+: )", line)]
         problems.append("compile failed: " + ("; ".join(errors[:3]) or proc.stdout[-500:]))
     for m in re.finditer(r"Overfull \\([hv])box \(([\d.]+)pt too (?:wide|high)\) (.*)", log_text):
         if float(m.group(2)) > OVERFULL_TOLERANCE_PT:
