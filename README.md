@@ -37,6 +37,25 @@ make present TALK=my-talk                   # present with pdfpc
 
 Outputs land in `talks/<slug>/build/` (git-ignored), with a `SHA256SUMS`.
 
+## Checks
+
+CI runs two workflows on every push: "Lint and test"
+(`.github/workflows/checks.yml`) and "Build talks"
+(`.github/workflows/build.yml`). Run the same locally:
+
+```sh
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+make lint test      # ruff, markdownlint (via npx), skills check, pytest; no TeX
+make ci             # everything CI runs: lint, test, check, decks
+```
+
+`make lint` is `lint-py` (ruff over `scripts/`, `manim/`, `tests/`),
+`lint-md` (markdownlint over every Markdown file) and `lint-skills`
+(`scripts/check_skills.py`: every skill and playbook is well formed and routed
+from `SKILLS.md`, and the paths the docs name exist). `make test` runs the unit
+tests in `tests/`. The Makefile uses `.venv/bin/python` when it exists; `make decks` needs
+poppler-utils.
+
 ## Outputs
 
 | File | Mode | For |
@@ -128,14 +147,15 @@ Without that step the timeline is estimated at 130 words a minute and the
 video is silent, which is enough to check pacing. `talks/<slug>/manim/<label>.py`
 replaces one frame with a native Manim animation: the Breeden–Litzenberger talk
 draws its density curve and second differences from `data/curves.csv`
-(`manim/density.py`). Rendering needs `pip install -r manim/requirements.txt`,
-ffmpeg, Cairo, Pango and `fonts-urw-base35`; 480p takes about a minute.
+(`talks/breeden-litzenberger/manim/density.py`). Rendering needs
+`pip install -r manim/requirements.txt`, ffmpeg, Cairo, Pango and
+`fonts-urw-base35`; 480p takes about a minute.
 
 ## Data from visuals
 
 A talk that charts data keeps a snapshot of its source and a derive script:
 
-```
+```text
 talks/<slug>/data/raw.json, meta.json   # copied from visuals/data/<viz-slug>/
 talks/<slug>/derive.py                  # snapshot -> CSVs + numbers.tex
 ```
@@ -159,7 +179,7 @@ for a given TeX Live release; a different release may produce different bytes.
 
 ## Layout
 
-```
+```text
 talks/<slug>/talk.tex    the one source per talk
 starter/talk.tex         template for make new
 tex/yjtalk.sty           modes, theme, notes, handout layout, determinism
@@ -171,9 +191,13 @@ scripts/sync_tokens.py   theme-tokens.json -> tex/yjtokens.tex
 scripts/talk_manifest.py talk.tex + beamer .nav -> frames, pages, notes, narration
 scripts/to_web.py        interactive web deck
 scripts/to_manim.py      narrated Manim video
+scripts/check_skills.py  skills, playbooks and SKILLS.md agree
+tests/                   unit tests for scripts/ (pytest)
 web/shell.html           web deck runtime
 manim/talkscene.py       video runtime (timing API of generate-explainer-video)
-.agents/skills/          playbooks for agents working in this repo
+SKILLS.md                router for agents: rules, playbooks, skills, gates
+.agents/playbooks/       step-by-step playbooks, one per kind of task
+.agents/skills/          reference skills the playbooks load
 ```
 
 Agents: start at [`SKILLS.md`](SKILLS.md).

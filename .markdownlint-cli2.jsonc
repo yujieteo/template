@@ -1,0 +1,12 @@
+// markdownlint-cli2 reads this from the repo root: make lint-md, and CI.
+{
+  "config": {
+    "default": true,
+    // Prose is wrapped by hand near 80 columns; tables and links run longer.
+    "MD013": false
+  },
+  "globs": ["**/*.md"],
+  // Skips talks/*/build/ (generated notes.md) and local venvs.
+  "gitignore": true,
+  "ignores": [".venv/**", "node_modules/**"]
+}

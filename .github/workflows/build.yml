@@ -8,12 +8,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install TeX Live
         run: |
@@ -25,21 +31,16 @@ jobs:
       # Lints every talk.tex, checks generated data and tokens are current,
       # builds all seven variants, and rebuilds them to prove identical bytes.
       - name: Build and verify
-        run: python3 scripts/build.py --check
+        run: make check
 
       # Web deck for every talk (checked), and the video inputs (script,
       # timings, slide images, scene.py compiled). Rendering the video needs
       # Manim and runs locally: make video TALK=<slug>.
       - name: Build web decks and video inputs
-        run: |
-          for talk in talks/*/talk.tex; do
-            slug=$(basename "$(dirname "$talk")")
-            python3 scripts/to_web.py "$slug"
-            python3 scripts/to_manim.py "$slug" --prepare-only
-          done
+        run: make decks
 
       - name: Upload PDFs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: talks
           path: |

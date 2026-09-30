@@ -1,3 +1,7 @@
 # Build outputs are reproducible from source: make check.
 talks/*/build/
 __pycache__/
+# Local lint and test tools: make lint test.
+.venv/
+.pytest_cache/
+.ruff_cache/
