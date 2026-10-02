@@ -67,6 +67,11 @@ A behaviour change to a script comes with a test that fails without it.
 `tests/conftest.py` puts `scripts/` on the import path and provides
 `make_talk`, which writes a minimal talk into a temp directory.
 
+Test cost stays flat: tests run without TeX, network or Manim, and the whole
+`make test` suite takes well under a second. Time `make test` before and after
+adding a test and quote both; a test that needs a build belongs in
+`make check` or CI's build job, not in `tests/`.
+
 ## Shared runtimes
 
 `web/shell.html` (web deck) and `manim/talkscene.py` (video) serve every talk.

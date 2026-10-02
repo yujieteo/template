@@ -15,6 +15,8 @@ script derives everything the slides show. The pattern is
 
 In visuals: `data/<viz-slug>/raw.*` and `meta.json` hold the data, and the
 builder `scripts/build_<viz>.py` holds the maths it already verifies.
+A visualisation is developed in its own repository and ported into visuals
+byte for byte; snapshot from visuals, the ported copy.
 
 ## Snapshot
 

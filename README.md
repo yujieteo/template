@@ -195,6 +195,7 @@ scripts/check_skills.py  skills, playbooks and SKILLS.md agree
 tests/                   unit tests for scripts/ (pytest)
 web/shell.html           web deck runtime
 manim/talkscene.py       video runtime (timing API of generate-explainer-video)
+AGENTS.md                entry point for agents: points to SKILLS.md
 SKILLS.md                router for agents: rules, playbooks, skills, gates
 .agents/playbooks/       step-by-step playbooks, one per kind of task
 .agents/skills/          reference skills the playbooks load

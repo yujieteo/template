@@ -25,10 +25,10 @@ FRAME = r"""\begin{frame}{A frame states its finding}
 
 @pytest.fixture
 def make_talk(tmp_path):
-    """Write talks/<slug>/talk.tex under a temp dir from a preamble and a body."""
+    """Write talks/demo/talk.tex under a temp dir from a preamble and a body."""
 
-    def make(body=FRAME, preamble=PREAMBLE, slug="demo", files=None):
-        talk_dir = tmp_path / "talks" / slug
+    def make(body=FRAME, preamble=PREAMBLE, files=None):
+        talk_dir = tmp_path / "talks" / "demo"
         talk_dir.mkdir(parents=True)
         (talk_dir / "talk.tex").write_text(preamble + "\\begin{document}\n" + body + "\\end{document}\n")
         for name, text in (files or {}).items():

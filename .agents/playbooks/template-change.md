@@ -9,7 +9,7 @@
    lists; runtime behaviour in `web/shell.html` or `manim/talkscene.py`,
    never in generated output.
 3. Script change: write or update the test in `tests/` first and see it fail,
-   then change the script and see it pass.
+   then change the script and see it pass. Time `make test` before and after.
 4. `make check`: both example talks pass unchanged.
 5. Render and look at one page per variant of both examples
    (`pdftoppm -r 50 -png`), especially notes and script pages.
@@ -29,5 +29,5 @@
 9. `make lint test`.
 
 **Reply:** what every talk now does differently, the `make check` result for
-both examples, the variants you looked at, and the negative test for any new
-check.
+both examples, the variants you looked at, the negative test for any new
+check, and `make test`'s time before and after any added test.

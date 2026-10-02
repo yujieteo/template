@@ -242,7 +242,7 @@ def has_libass():
     return re.search(r"\bsubtitles\b", out) is not None
 
 
-def render(slug, out, script, timings, audio, quality, theme, captions, python):
+def render(slug, out, timings, audio, quality, theme, captions, python):
     # Burned-in captions (libass) keep Manim's frames static between reveals,
     # which renders several times faster than drawing captions in Manim.
     burn = captions and has_libass()
@@ -319,7 +319,7 @@ def main():
         fail(f"{args.python} cannot import manim; pass --python or set MANIM_PYTHON to a venv with manim")
     if not shutil.which("ffmpeg"):
         fail("ffmpeg not found")
-    video = render(args.slug, out, script, timings, audio, args.quality, args.theme, not args.no_captions, args.python)
+    video = render(args.slug, out, timings, audio, args.quality, args.theme, not args.no_captions, args.python)
     check(out, video, timings, out / "frames")
 
 
