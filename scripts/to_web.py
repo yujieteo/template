@@ -31,11 +31,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from talk_manifest import ROOT, TALKS, build_manifest  # noqa: E402
+from talk_manifest import ROOT, TALKS, WORDS_PER_MINUTE, build_manifest, sentences  # noqa: E402
 
 SHELL = ROOT / "web" / "shell.html"
 TOKENS = ROOT / "theme-tokens.json"
-WORDS_PER_MINUTE = 130  # same budget as generate-explainer-video
 MAX_DECK_BYTES = 40_000_000
 
 
@@ -74,10 +73,6 @@ def mmss(seconds):
     return f"{seconds // 60}:{seconds % 60:02d}"
 
 
-def sentences(text):
-    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s.strip()]
-
-
 def notes_markdown(manifest):
     """presentation-coach notes.md from \\note text; cues are split into fields."""
     total = sum(seconds_for(f["narration"]) for f in manifest["frames"])
@@ -90,35 +85,39 @@ def notes_markdown(manifest):
         out.append(f"## {f['id']}")
         if f["narration"]:
             out.append(f"**Time:** {mmss(seconds_for(f['narration']))}")
-        if f["kind"] == "section":
-            out += [f"**Say:** Section {f['section_number']}: {f['title']}. Pause; say in one sentence what this part answers.", ""]
-            continue
-        if len(f["notes"]) > 1:  # \note[item]{...} cues
-            out.append("**Cues:**")
-            out += [f"- {n}" for n in f["notes"]]
-            out.append("")
-            continue
-        text = " ".join(f["notes"])
-        fields, questions = {}, []
-        for m in re.finditer(r"Likely question:\s*(.*?)(?:\s*Answer:\s*(.*?))?(?=\s*(?:Transition:|Likely question:|$))", text, re.S):
-            questions.append(m.group(1).strip() + (f" {m.group(2).strip()}" if m.group(2) else ""))
-        text = re.sub(r"Likely question:.*?(?=\s*(?:Transition:|$))", "", text, flags=re.S)
-        m = re.search(r"Transition:\s*(.*)$", text, re.S)
-        if m:
-            fields["Transition"] = m.group(1).strip()
-            text = text[:m.start()].strip()
-        said = sentences(text)
-        if said:
-            out.append(f"**Emphasise:** {said[0]}")
-        if len(said) > 1:
-            out.append(f"**Say:** {' '.join(said[1:])}")
-        if "Transition" in fields:
-            out.append(f"**Transition:** {fields['Transition']}")
-        if questions:
-            out.append("**Likely questions:**")
-            out += [f"- {q}" for q in questions]
+        out += frame_notes(f)
         out.append("")
     return "\n".join(out).rstrip() + "\n"
+
+
+def frame_notes(f):
+    """One slide's note fields. A single \\note splits into Emphasise, Say, Transition and Likely questions."""
+    if f["kind"] == "section":
+        return [f"**Say:** Section {f['section_number']}: {f['title']}. Pause; say in one sentence what this part answers."]
+    if len(f["notes"]) > 1:  # \note[item]{...} cues
+        return ["**Cues:**"] + [f"- {n}" for n in f["notes"]]
+    text = " ".join(f["notes"])
+    questions = []
+    for m in re.finditer(r"Likely question:\s*(.*?)(?:\s*Answer:\s*(.*?))?(?=\s*(?:Transition:|Likely question:|$))", text, re.S):
+        questions.append(m.group(1).strip() + (f" {m.group(2).strip()}" if m.group(2) else ""))
+    text = re.sub(r"Likely question:.*?(?=\s*(?:Transition:|$))", "", text, flags=re.S)
+    transition = None
+    m = re.search(r"Transition:\s*(.*)$", text, re.S)
+    if m:
+        transition = m.group(1).strip()
+        text = text[:m.start()].strip()
+    out = []
+    said = sentences(text)
+    if said:
+        out.append(f"**Emphasise:** {said[0]}")
+    if len(said) > 1:
+        out.append(f"**Say:** {' '.join(said[1:])}")
+    if transition is not None:
+        out.append(f"**Transition:** {transition}")
+    if questions:
+        out.append("**Likely questions:**")
+        out += [f"- {q}" for q in questions]
+    return out
 
 
 def render_svgs(pdf, dest, pages):
@@ -174,12 +173,26 @@ def check(slug):
     if not index.is_file():
         fail(f"no build: run python3 scripts/to_web.py {slug}")
     html = index.read_text()
+    data = json.loads(re.search(r'<script type="application/json" id="talk-data">(.*?)</script>', html, re.S).group(1).replace("<\\/", "</"))
+    total = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
+    problems = deck_problems(out, html, data, total)
+    if problems:
+        fail("check failed:\n  " + "\n  ".join(problems))
+    digest = hashlib.sha256()
+    for p in sorted(out.rglob("*")):
+        if p.is_file():
+            digest.update(p.relative_to(out).as_posix().encode() + p.read_bytes())
+    print(f"verified: {slug} web deck, {len(data['frames'])} slides, {len(data['themes'])} themes, "
+          f"{total / 1e6:.1f} MB, no external dependencies, tree sha256 {digest.hexdigest()[:12]}")
+
+
+def deck_problems(out, html, data, total):
+    """Everything wrong with a built web deck: placeholders, external requests, slides, notes and size."""
     problems = []
     if re.search(r"\{\{[A-Z_]+\}\}", html):
         problems.append("unreplaced {{PLACEHOLDER}} in index.html")
     for hit in re.findall(r"(?:src|href)=\"https?://[^\"]*\"|<script[^>]+src=|<link[^>]+stylesheet|@import|url\(\s*[\"']?https?:", html):
         problems.append(f"external dependency: {hit}")
-    data = json.loads(re.search(r'<script type="application/json" id="talk-data">(.*?)</script>', html, re.S).group(1).replace("<\\/", "</"))
     ids = [f["id"] for f in data["frames"]]
     if len(ids) != len(set(ids)):
         problems.append("duplicate slide ids")
@@ -196,17 +209,9 @@ def check(slug):
     for f in data["frames"]:
         if f["kind"] == "frame" and not f["title"]:
             problems.append(f"{f['id']}: frame without a title")
-    total = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
     if total > MAX_DECK_BYTES:
         problems.append(f"deck is {total / 1e6:.1f} MB (> {MAX_DECK_BYTES / 1e6:.0f} MB)")
-    if problems:
-        fail("check failed:\n  " + "\n  ".join(problems))
-    digest = hashlib.sha256()
-    for p in sorted(out.rglob("*")):
-        if p.is_file():
-            digest.update(p.relative_to(out).as_posix().encode() + p.read_bytes())
-    print(f"verified: {slug} web deck, {len(ids)} slides, {len(data['themes'])} themes, "
-          f"{total / 1e6:.1f} MB, no external dependencies, tree sha256 {digest.hexdigest()[:12]}")
+    return problems
 
 
 def main():

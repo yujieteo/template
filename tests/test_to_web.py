@@ -57,3 +57,32 @@ def test_notes_markdown_has_one_section_per_frame_in_order():
     assert re.findall(r"^## (\S+)$", md, re.M) == ["deck", "s01-title", "s02-section-question", "s03-cues"]
     assert "**Say:** Section 1: s02-section-question." in md
     assert "**Cues:**\n- First cue.\n- Second cue." in md
+
+
+def built_deck(tmp_path, notes="# Speaker notes\n\n## deck\n\n## s01-a\n", svg_bytes=300):
+    """A minimal built deck folder: one frame on page 1, in the light theme."""
+    (tmp_path / "slides" / "light").mkdir(parents=True)
+    (tmp_path / "slides" / "light" / "001.svg").write_text("x" * svg_bytes)
+    (tmp_path / "notes.md").write_text(notes)
+    data = {"themes": ["light"], "frames": [{"id": "s01-a", "kind": "frame", "title": "A", "pages": [1]}]}
+    return tmp_path, data
+
+
+def test_deck_problems_passes_a_complete_offline_deck(tmp_path):
+    out, data = built_deck(tmp_path)
+    assert to_web.deck_problems(out, "<html></html>", data, 1000) == []
+
+
+def test_deck_problems_names_each_defect(tmp_path):
+    out, data = built_deck(tmp_path, notes="## deck\n## other\n", svg_bytes=10)
+    data["frames"].append({"id": "s01-a", "kind": "frame", "title": "", "pages": []})
+    html = '<title>{{TITLE}}</title><script src="https://cdn.example/x.js"></script>'
+    assert to_web.deck_problems(out, html, data, to_web.MAX_DECK_BYTES + 1) == [
+        "unreplaced {{PLACEHOLDER}} in index.html",
+        "external dependency: <script src=",
+        "duplicate slide ids",
+        "s01-a: missing or empty slides/light/001.svg",
+        "notes.md sections do not match the slide ids in order",
+        "s01-a: frame without a title",
+        "deck is 40.0 MB (> 40 MB)",
+    ]

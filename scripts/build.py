@@ -30,8 +30,9 @@ import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-TALKS = ROOT / "talks"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from talk_manifest import ROOT, TALKS, strip_comments  # noqa: E402
+
 TEX = ROOT / "tex"
 
 # Jobname suffix -> what it is. Order is the order of SHA256SUMS.
@@ -71,7 +72,7 @@ def source_date_epoch(talk_dir):
 def lint(talk_dir):
     """Rules that keep one source file producing every output deterministically."""
     src = (talk_dir / "talk.tex").read_text()
-    code = "\n".join(re.split(r"(?<!\\)%", line, maxsplit=1)[0] for line in src.splitlines())
+    code = strip_comments(src)
     problems = []
     if not re.search(r"\\documentclass\s*(\[[^\]]*\]|\[(?:[^\[\]]|\{[^{}]*\})*\])?\s*\{beamerswitch\}", code, re.S):
         problems.append("talk.tex must use \\documentclass{beamerswitch}")
@@ -116,10 +117,17 @@ def compile_variant(talk_dir, variant, outdir, epoch):
     proc = subprocess.run(cmd, cwd=talk_dir, env=env, capture_output=True, text=True)
     log = Path(outdir) / f"{job}.log"
     log_text = log.read_text(errors="replace") if log.is_file() else ""
-    problems = []
+    problems = log_problems(log_text)
     if proc.returncode != 0:
         errors = [line for line in log_text.splitlines() if re.match(r"^(!|.*:\d+: )", line)]
         problems.append("compile failed: " + ("; ".join(errors[:3]) or proc.stdout[-500:]))
+    pages = re.search(r"Output written on .*?\((\d+) pages?", log_text)
+    return variant, (int(pages.group(1)) if pages else 0), sorted(set(problems))
+
+
+def log_problems(log_text):
+    """What a LaTeX log shows wrong with a PDF that compiled: overfull boxes, unresolved references, missing glyphs."""
+    problems = []
     for m in re.finditer(r"Overfull \\([hv])box \(([\d.]+)pt too (?:wide|high)\) (.*)", log_text):
         if float(m.group(2)) > OVERFULL_TOLERANCE_PT:
             problems.append(f"overfull \\{m.group(1)}box {m.group(2)}pt {m.group(3).strip()}")
@@ -131,8 +139,7 @@ def compile_variant(talk_dir, variant, outdir, epoch):
             problems.append(f"warning: {text}")
     if "Missing character" in log_text:
         problems.append("a glyph is missing from the font (see log)")
-    pages = re.search(r"Output written on .*?\((\d+) pages?", log_text)
-    return variant, (int(pages.group(1)) if pages else 0), sorted(set(problems))
+    return problems
 
 
 def build_talk(talk_dir, variants, outdir, epoch):
@@ -184,32 +191,35 @@ def main():
         fail("lint failed:\n  " + "\n  ".join(lint_problems))
     check_generated(talk_dirs)
 
-    failed = False
-    for talk_dir in talk_dirs:
-        epoch = source_date_epoch(talk_dir)
-        outdir = talk_dir / "build"
-        pages, problems = build_talk(talk_dir, variants, outdir, epoch)
-        sums = {v: sha256(outdir / f"talk-{v}.pdf") for v in variants if (outdir / f"talk-{v}.pdf").is_file()}
-        (outdir / "SHA256SUMS").write_text("".join(f"{h}  talk-{v}.pdf\n" for v, h in sums.items()))
-
-        if args.check and not problems:
-            with tempfile.TemporaryDirectory(prefix="talk-rebuild-") as tmp:
-                _, again = build_talk(talk_dir, variants, Path(tmp), epoch)
-                problems += again
-                for v, h in sums.items():
-                    if sha256(Path(tmp) / f"talk-{v}.pdf") != h:
-                        problems.append(f"{v}: not reproducible, second build differs")
-
-        print(f"{talk_dir.name} (SOURCE_DATE_EPOCH={epoch})")
-        for v in variants:
-            print(f"  talk-{v}.pdf  {pages.get(v, 0):3d} pages  {sums.get(v, '-')[:12]}  {VARIANTS[v]}")
-        if problems:
-            failed = True
-            print("  FAILED:\n    " + "\n    ".join(problems))
-        elif args.check:
-            print("  verified: lint clean, no overfull boxes, page counts agree, byte-reproducible")
-    if failed:
+    results = [build_and_report(talk_dir, variants, args.check) for talk_dir in talk_dirs]
+    if not all(results):
         sys.exit(1)
+
+
+def build_and_report(talk_dir, variants, check):
+    """Build one talk, write its SHA256SUMS and print its summary. True when it passed."""
+    epoch = source_date_epoch(talk_dir)
+    outdir = talk_dir / "build"
+    pages, problems = build_talk(talk_dir, variants, outdir, epoch)
+    sums = {v: sha256(outdir / f"talk-{v}.pdf") for v in variants if (outdir / f"talk-{v}.pdf").is_file()}
+    (outdir / "SHA256SUMS").write_text("".join(f"{h}  talk-{v}.pdf\n" for v, h in sums.items()))
+
+    if check and not problems:
+        with tempfile.TemporaryDirectory(prefix="talk-rebuild-") as tmp:
+            _, again = build_talk(talk_dir, variants, Path(tmp), epoch)
+            problems += again
+            for v, h in sums.items():
+                if sha256(Path(tmp) / f"talk-{v}.pdf") != h:
+                    problems.append(f"{v}: not reproducible, second build differs")
+
+    print(f"{talk_dir.name} (SOURCE_DATE_EPOCH={epoch})")
+    for v in variants:
+        print(f"  talk-{v}.pdf  {pages.get(v, 0):3d} pages  {sums.get(v, '-')[:12]}  {VARIANTS[v]}")
+    if problems:
+        print("  FAILED:\n    " + "\n    ".join(problems))
+    elif check:
+        print("  verified: lint clean, no overfull boxes, page counts agree, byte-reproducible")
+    return not problems
 
 
 if __name__ == "__main__":
