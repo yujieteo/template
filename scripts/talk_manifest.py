@@ -26,6 +26,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TALKS = ROOT / "talks"
+# Narration pace for timing estimates: the same budget as generate-explainer-video.
+WORDS_PER_MINUTE = 130
 
 GREEK = {
     "alpha": "α", "beta": "β", "gamma": "γ", "delta": "δ", "epsilon": "ε", "varepsilon": "ε",
@@ -60,6 +62,11 @@ def fail(msg):
 # ---------------------------------------------------------------- TeX reading
 def strip_comments(src):
     return "\n".join(re.split(r"(?<!\\)%", line, maxsplit=1)[0] for line in src.splitlines())
+
+
+def sentences(text):
+    """Narration split after ., ! or ?: one caption, reveal or note line each."""
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s.strip()]
 
 
 def read_group(s, i, open_="{", close="}"):
@@ -211,6 +218,26 @@ def parse_talk(talk_dir):
     section_pages = "\\yjsectionpagesfalse" not in src
     data_files = sorted({m.group(1) for m in re.finditer(r"\\pgfplotstableread(?:\[[^\]]*\])?\{([^}]+)\}", src)})
 
+    frames, section, section_no = [], "", 0
+    for kind, ev in talk_events(body):
+        if kind == "section":
+            section = tex_to_text(ev["title"], macros)
+            if not ev["star"]:
+                section_no += 1
+                if section_pages:
+                    frames.append({"kind": "section", "title": section, "section": section,
+                                   "section_number": section_no, "label": "", "notes": [],
+                                   "narration": "", "source": ""})
+            continue
+        spec = ev["spec"].replace(" ", "")
+        if re.search(r"(^|\|)(beamer|presentation):0", spec):
+            continue  # not on the slides
+        frames.append(frame_entry(ev, section, info["title"], macros))
+    return info, frames, data_files
+
+
+def talk_events(body):
+    """The document's \\section and frame events as (kind, payload), in source order."""
     events = []  # (position, kind, payload)
     for m in re.finditer(r"\\section(\*?)(?![A-Za-z])", body):
         args, _ = read_command_args(body, m.end())
@@ -231,35 +258,24 @@ def parse_talk(talk_dir):
         events.append((m.start(), "frame", {"spec": args["spec"] or "", "opt": args["opt"] or "",
                                             "title": title, "body": content}))
     events.sort(key=lambda e: e[0])
+    return [(kind, ev) for _, kind, ev in events]
 
-    frames, section, section_no = [], "", 0
-    for _, kind, ev in events:
-        if kind == "section":
-            section = tex_to_text(ev["title"], macros)
-            if not ev["star"]:
-                section_no += 1
-                if section_pages:
-                    frames.append({"kind": "section", "title": section, "section": section,
-                                   "section_number": section_no, "label": "", "notes": [],
-                                   "narration": "", "source": ""})
-            continue
-        spec = ev["spec"].replace(" ", "")
-        if re.search(r"(^|\|)(beamer|presentation):0", spec):
-            continue  # not on the slides
-        body_ = ev["body"]
-        notes = [tex_to_text(a["arg"], macros, code=True)
-                 for a, _, _ in find_commands(body_, "note") if a["arg"] is not None]
-        narration = " ".join(tex_to_text(a["arg"], macros)
-                             for a, _, _ in find_commands(body_, "narration") if a["arg"] is not None)
-        source = next((tex_to_text(a["arg"], macros) for a, _, _ in find_commands(body_, "yjsource")
-                       if a["arg"] is not None), "")
-        label = (re.search(r"label\s*=\s*([^,\]\s]+)", ev["opt"]) or [None, ""])[1]
-        is_title = "\\titlepage" in body_
-        frames.append({"kind": "title" if is_title else "frame",
-                       "title": info["title"] if is_title else tex_to_text(ev["title"], macros),
-                       "section": section, "label": label, "notes": notes,
-                       "narration": narration, "source": source})
-    return info, frames, data_files
+
+def frame_entry(ev, section, talk_title, macros):
+    """One frame's manifest entry: its title, label, \\note list, \\narration and \\yjsource as text."""
+    body = ev["body"]
+    notes = [tex_to_text(a["arg"], macros, code=True)
+             for a, _, _ in find_commands(body, "note") if a["arg"] is not None]
+    narration = " ".join(tex_to_text(a["arg"], macros)
+                         for a, _, _ in find_commands(body, "narration") if a["arg"] is not None)
+    source = next((tex_to_text(a["arg"], macros) for a, _, _ in find_commands(body, "yjsource")
+                   if a["arg"] is not None), "")
+    label = (re.search(r"label\s*=\s*([^,\]\s]+)", ev["opt"]) or [None, ""])[1]
+    is_title = "\\titlepage" in body
+    return {"kind": "title" if is_title else "frame",
+            "title": talk_title if is_title else tex_to_text(ev["title"], macros),
+            "section": section, "label": label, "notes": notes,
+            "narration": narration, "source": source}
 
 
 # ---------------------------------------------------------------- pages

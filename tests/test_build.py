@@ -55,3 +55,20 @@ def test_source_date_epoch_prefers_the_environment(monkeypatch, tmp_path):
 def test_source_date_epoch_is_zero_for_an_uncommitted_talk(monkeypatch, tmp_path):
     monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
     assert build.source_date_epoch(tmp_path / "never-committed") == "0"
+
+
+def test_log_problems_reports_what_a_compiled_pdf_hides():
+    log = "\n".join([
+        "Overfull \\hbox (0.5pt too wide) in paragraph at lines 3--4",
+        "Overfull \\hbox (12.3pt too wide) in paragraph at lines 9--10",
+        "LaTeX Warning: Reference `fig:a' on page 2 undefined on input line 7.",
+        "LaTeX Warning: Unused global option(s): [x].",
+        "Package pgfplots Warning: running in backwards compatibility mode",
+        "Missing character: There is no ^^A in font cmr10!",
+    ])
+    assert build.log_problems(log) == [
+        "overfull \\hbox 12.3pt in paragraph at lines 9--10",
+        "warning: Reference `fig:a' on page 2 undefined on input line 7.",
+        "a glyph is missing from the font (see log)",
+    ]
+    assert build.log_problems("Output written on talk.pdf (3 pages).") == []

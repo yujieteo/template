@@ -39,13 +39,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from talk_manifest import ROOT, TALKS, build_manifest  # noqa: E402
+from talk_manifest import ROOT, TALKS, WORDS_PER_MINUTE, build_manifest, sentences  # noqa: E402
 
 TOKENS = ROOT / "theme-tokens.json"
 RUNTIME = ROOT / "manim"
-WORDS_PER_MINUTE = 130
 LEAD, GAP, TAIL = 0.5, 0.7, 1.5  # seconds, as in generate-explainer-video
-SENTENCES = r"(?<=[.!?])\s+"
 QUALITY_DIR = {"l": "480p15", "m": "720p30", "h": "1080p60"}
 # British English by default. Kokoro voice ids start with their language
 # (a American, b British); generate-explainer-video's synthesize.py builds the
@@ -75,10 +73,6 @@ def fail(msg):
 def run(cmd, **kw):
     print("+", " ".join(str(c) for c in cmd), flush=True)
     subprocess.run(cmd, check=True, **kw)
-
-
-def sentences(text):
-    return [s.strip() for s in re.split(SENTENCES, text.strip()) if s.strip()]
 
 
 def narration_for(frame):
