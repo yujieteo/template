@@ -72,7 +72,6 @@ kbd{font:13px ui-monospace,SFMono-Regular,Consolas,monospace;border:1px solid va
 
 /* Presenter window: current slide, next slide, notes, clock. */
 body.presenter #area{flex:none;height:62%}
-body.presenter #main{flex-direction:column}
 body.presenter #bar .audience{display:none}
 #next{display:none}
 body.presenter #next{display:block;position:fixed;right:16px;top:12px;width:24%;z-index:2}
@@ -111,7 +110,7 @@ body.presenter #clock{display:inline}
 </div>
 <div id="overview" role="dialog" aria-label="All slides">
   <header><input id="q" type="search" placeholder="Search titles, slide text and transcript" aria-label="Search slides">
-    <span class="count" id="q-count"></span><button id="o-close" class="panel-close">Close (Esc)</button></header>
+    <span class="count" id="q-count"></span><button id="o-close">Close (Esc)</button></header>
   <nav id="grid"></nav>
 </div>
 <div id="help" role="dialog" aria-label="Keyboard shortcuts"><div>

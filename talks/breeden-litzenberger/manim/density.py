@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 from manim import (
-    Create, Dot, FadeIn, LaggedStart, Line, UP, DOWN, LEFT, RIGHT, VGroup, VMobject, Write, config,
+    Create, Dot, FadeIn, LaggedStart, Line, UP, DOWN, LEFT, VGroup, VMobject, Write, config,
 )
 from talkscene import PALETTE, SLIDE_SCALE, text
 
@@ -25,7 +25,7 @@ def load():
 def animate(scene, frame):
     rows, numbers = load()
     k0, p0 = float(numbers["blKzero"]), float(numbers["blPzero"])
-    fg, muted, accent = PALETTE["foreground"], PALETTE["secondary"], PALETTE["accent"]
+    muted, accent = PALETTE["secondary"], PALETTE["accent"]
 
     # Plot box in the area the slide image would occupy.
     top = config.frame_height / 2 - 0.12
